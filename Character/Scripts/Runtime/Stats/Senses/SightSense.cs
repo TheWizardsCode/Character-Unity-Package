@@ -16,13 +16,13 @@ namespace WizardsCode.Character.AI
             m_closestSensedObject = null;
             float minSqrMag = float.PositiveInfinity;
             float currentSqrMag;
-            for (int i = SensedThings.Count - 1; i >= 0; i--)
+            for (int i = sensedThings.Count - 1; i >= 0; i--)
             {
-                currentSqrMag = Vector3.SqrMagnitude(SensedThings[i].position - transform.position);
+                currentSqrMag = Vector3.SqrMagnitude(sensedThings[i].position - transform.position);
                 if (currentSqrMag < minSqrMag)
                 {
                     minSqrMag = currentSqrMag;
-                    m_closestSensedObject = SensedThings[i];
+                    m_closestSensedObject = sensedThings[i];
                 }
             }
         }

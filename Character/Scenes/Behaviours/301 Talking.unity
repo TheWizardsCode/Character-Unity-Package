@@ -1351,6 +1351,27 @@ PrefabInstance:
       propertyPath: m_Name
       value: Actor 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6169127672608557278, guid: 15a4f1d59aa6af24982fba8bb6947eb7,
+        type: 3}
+      propertyPath: m_ComponentTypeNameToSense
+      value: WizardsCode.Character.BaseActorController
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896849546547248828, guid: 15a4f1d59aa6af24982fba8bb6947eb7,
+        type: 3}
+      propertyPath: m_GroupDistance
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896849546547248828, guid: 15a4f1d59aa6af24982fba8bb6947eb7,
+        type: 3}
+      propertyPath: m_OnPerformAction.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896849546547248828, guid: 15a4f1d59aa6af24982fba8bb6947eb7,
+        type: 3}
+      propertyPath: m_OnPerformAction.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: 64adc2cf94e21b64c91d06b5f0018f04,
+        type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15a4f1d59aa6af24982fba8bb6947eb7, type: 3}
 --- !u!224 &1674284343 stripped
@@ -1555,5 +1576,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: Actor 2
       objectReference: {fileID: 0}
+    - target: {fileID: 6169127672608557278, guid: 15a4f1d59aa6af24982fba8bb6947eb7,
+        type: 3}
+      propertyPath: m_ComponentTypeNameToSense
+      value: WizardsCode.Character.BaseActorController
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896849546547248828, guid: 15a4f1d59aa6af24982fba8bb6947eb7,
+        type: 3}
+      propertyPath: m_GroupDistance
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896849546547248828, guid: 15a4f1d59aa6af24982fba8bb6947eb7,
+        type: 3}
+      propertyPath: m_OnPerformAction.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8896849546547248828, guid: 15a4f1d59aa6af24982fba8bb6947eb7,
+        type: 3}
+      propertyPath: m_OnPerformAction.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: 64adc2cf94e21b64c91d06b5f0018f04,
+        type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15a4f1d59aa6af24982fba8bb6947eb7, type: 3}

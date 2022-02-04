@@ -68,7 +68,7 @@ namespace WizardsCode.Character
                 if (CurrentInteractableTarget == null)
                 {
                     reasoning.AppendLine("Couldn't see or recall a suitable interactable nearby, will have to find one first.");
-                    return true;
+                    return false;
                 }
                 else
                 {

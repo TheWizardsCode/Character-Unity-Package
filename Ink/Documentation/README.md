@@ -4,7 +4,10 @@ We add a number of `Directions` that can be embedded into an Ink script, these i
 
 # Quick Start
 
-We assume that you have a script already and want to integrate it into your game environment.
+We assume that you have a script already and want to integrate it into your game environment. 
+
+The system supports speaker names in the form of `Speaker: Spoken words.` Although it is not required it is a good idea to have your speaker names be the same as the
+actor Game Objects in the scene. This allows the Ink manager to discover those objects and control them, such as preventing the actors brain from choosing an alternative action until after a narrative section has passed.
 
 ## Unity Setup
 
@@ -35,6 +38,7 @@ Directions are inserted with the following syntax:
 Note that actors and cues that are to be used need to be setup in the `InkManager` before the game starts.
 
 ## Cue
+
 ## TurnToFace
 
 The actor will turn to face the object identified.
@@ -44,6 +48,14 @@ The actor will turn to face the object identified.
 ```
 
 ## PlayerControl
+
+Sets the player control to either On or Off. If on then the Ink story will not progress and no UI will be shown until it is renabled
+with a call to `SetPlayerControl(false)` in the API. Typically this would happen when a player takes a particular action in the game.
+
+```
+>>> PlayerControl: [ON_OR_OFF]
+```
+
 ## MoveTo 
 
 Move and actor to specific location. It is up to the ActorController to decide how they should get there.
@@ -53,6 +65,7 @@ Move and actor to specific location. It is up to the ActorController to decide h
 ```
 
 ## SetEmotion
+
 ## Action
 
 Tell an actor to prioritize a particular behaviour. Under normal circumstances
@@ -64,7 +77,9 @@ preconditions have been met and no higher priority item exists.
 ```
 
 ## StopMoving
+
 ## AnimationParam
+
 ## Camera
 
 Switch to a specific camera and optionally look at a named object.
@@ -74,6 +89,7 @@ Switch to a specific camera and optionally look at a named object.
 ```
 
 ## Music
+
 ## WaitFor
 
 Wait for a particular game state. Supported states are:

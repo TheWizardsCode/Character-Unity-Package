@@ -43,7 +43,7 @@ namespace WizardsCode.Character.AI
             get { return m_ComponentType; }
         }
 
-        internal List<Transform> SensedThings
+        internal List<Transform> sensedThings
         {
             get { return m_SensedObjects; }
         }
@@ -53,7 +53,7 @@ namespace WizardsCode.Character.AI
         /// </summary>
         internal virtual bool HasSensed
         {
-            get { return SensedThings.Count > 0; }
+            get { return sensedThings.Count > 0; }
         }
 
         internal virtual void Awake()
@@ -63,14 +63,14 @@ namespace WizardsCode.Character.AI
             m_ComponentType = Type.GetType(m_ComponentTypeNameToSense);
             if (m_ComponentType == null)
             {
-                Debug.LogWarning(logName + " is a sense that has an invalid target component type of " + m_ComponentType + " Disabling the sense component.");
+                Debug.LogError(logName + " is a sense that has an invalid target component type of " + m_ComponentType + " Disabling the sense component.");
                 this.enabled = false;
             }
         }
 
         internal void Update()
         {
-            //TODO move the overall sense code into the ActorController where it can cache the sensed object list. Implementations of this class can then filter for items they care about.
+            //OPTIMIZATION move the overall sense code into the ActorController where it can cache the sensed object list. Implementations of this class can then filter for items they care about.
             Collider[] hitColliders = new Collider[maxSensedColliders];
             int numColliders = Physics.OverlapSphereNonAlloc(transform.position, m_MaxRange, hitColliders, m_LayerMask);
             m_SensedObjects = new List<Transform>();
@@ -82,7 +82,7 @@ namespace WizardsCode.Character.AI
                     continue;
                 }
 
-                //TODO OPTIMIZATION use sqrmagnitude not distance
+                //OPTIMIZATION use sqrmagnitude not distance
                 if (string.IsNullOrEmpty(m_Tag) || root.CompareTag(m_Tag))
                 {
                     if (Vector3.Distance(this.transform.root.transform.position, root.position) >= m_MinRange && root.GetComponentInChildren(ComponentType))
@@ -104,13 +104,11 @@ namespace WizardsCode.Character.AI
             {
                 isValid = false;
                 //TODO handle this error in the editor, e.g. show an error box
-                Debug.LogWarning(name + " has a sense SO attempting to sense an unkown object type of " + componentType);
+                Debug.LogWarning($"{name} has a sense that is attempting to sense an unkown object type of {componentType}");
             }
             else if (!isValid)
             {
                 isValid = true;
-                //TODO when the error is reported in the editor no need for this log
-                Debug.Log(name + " is now valid.");
             }
         }
 

@@ -466,6 +466,22 @@ namespace WizardsCode.Character
             isRotating = false;
         }
 
+        /// <summary>
+        /// Start talking animations.
+        /// </summary>
+        public bool talking
+        {
+            get { return m_AnimationLayers.isTalking; }
+            set
+            {
+                if (m_AnimationLayers.isTalking != value)
+                {
+                    m_AnimationLayers.isTalking = value;
+                }
+            }
+        }
+
+        [Obsolete("Use `talking = true` instead. Deprecated in 0.4.0.")]
         public void StartTalking()
         {
             if (m_AnimationLayers != null)
@@ -474,6 +490,7 @@ namespace WizardsCode.Character
             }
         }
 
+        [Obsolete("Use `talking = false` instead. Deprecated in 0.4.0.")]
         public void StopTalking()
         {
             if (m_AnimationLayers != null)

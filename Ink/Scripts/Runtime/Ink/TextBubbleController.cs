@@ -140,11 +140,7 @@ public class TextBubbleController : MonoBehaviour
     {
         ShowWidget(true);
 
-        if (m_SpeakersName == null || m_StoryText == null)
-        {
-            Debug.LogError("tmp component(s) are  null");
-            return;
-        }
+        m_SpeakersName.gameObject.SetActive(!string.IsNullOrEmpty(speakersName));
 
         m_SpeakersName.text = speakersName;
         m_StoryText.text = text;

@@ -284,6 +284,11 @@ namespace WizardsCode.Ink
         {
             EraseUI();
 
+            BaseActorController speaker = FindActor(m_CurrentSpeakerName);
+            if (speaker)
+            {
+                speaker.talking = true;
+            }
             m_TextBubble.SetText(m_CurrentSpeakerName, m_NewStoryText.ToString(), true);
 
             if (m_AlwaysWaitForPlayer || m_Story.currentChoices.Count > 1)
@@ -881,6 +886,11 @@ namespace WizardsCode.Ink
             m_IsUIDirty = true;
         }
 
+        /// <summary>
+        /// Sets the player control to either On or Off. If on then the story will not progress until it is renabled
+        /// with a call to `SetPlayerControl(false)`
+        /// </summary>
+        /// <param name="args">On or Off</param>
         void SetPlayerControl(string[] args)
         {
             ValidateArgumentCount(Direction.PlayerControl, args, 1);

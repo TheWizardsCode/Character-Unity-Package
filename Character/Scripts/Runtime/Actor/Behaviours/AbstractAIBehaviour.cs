@@ -121,7 +121,7 @@ namespace WizardsCode.Character
                 List<Transform> result = new List<Transform>();
                 for (int i = 0; i < m_RequiredSenses.Length; i++)
                 {
-                    result.AddRange(m_RequiredSenses[i].SensedThings);
+                    result.AddRange(m_RequiredSenses[i].sensedThings);
                 }
                 return result;
             }
