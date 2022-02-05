@@ -362,17 +362,16 @@ namespace WizardsCode.Character
                     if (!m_Agent.pathPending && m_Agent.remainingDistance <= ArrivingDistance)
                     {
                         state = States.Arriving;
+                        if (onArriving != null)
+                        {
+                            onArriving();
+                            onArriving = null;
+                        }
                     }
 
                     hasMoved = true;
                     break;
                 case States.Arriving:
-                    if (onArriving != null)
-                    {
-                        onArriving();
-                        onArriving = null;
-                    }
-
                     if (m_Agent.remainingDistance <= m_Agent.stoppingDistance)
                     {
                         state = States.Arrived;
@@ -397,7 +396,9 @@ namespace WizardsCode.Character
         {
             get
             {
-                return state == States.Moving;
+                return state == States.Moving 
+                    || state == States.Arriving
+                    || state == States.Arrived;
             }
         }
 

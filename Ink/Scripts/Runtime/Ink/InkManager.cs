@@ -203,10 +203,11 @@ namespace WizardsCode.Ink
             {
                 for (int i = waitForStates.Count - 1; i >= 0; i--)
                 {
-                    switch (waitForStates[i].m_WaitingForState)
+                    switch (waitForStates[i].waitType)
                     {
-                        case "ReachedTarget":
-                            if (waitForStates[i].m_WaitingForActor.IsMoving) {
+                        case WaitForState.WaitType.ReachTarget:
+                            if (waitForStates[i].actor.IsMoving) {
+                                Debug.Log($"Waiting for {waitForStates[i].actor} to reach destination.");
                                 return true;
                             } else
                             {
@@ -215,10 +216,10 @@ namespace WizardsCode.Ink
                                 if (waitForStates.Count == 0) return false;
                             }
                             break;
-                        case "Time":
-                            if (Time.timeSinceLevelLoad < waitForStates[i].m_WaitUntilTime)
+                        case WaitForState.WaitType.Time:
+                            if (Time.timeSinceLevelLoad < waitForStates[i].endTime)
                             {
-                                Debug.Log($"Waiting until {waitForStates[i].m_WaitUntilTime} currently {Time.timeSinceLevelLoad}");
+                                //Debug.Log($"Waiting until {waitForStates[i].m_WaitUntilTime} currently {Time.timeSinceLevelLoad}");
                                 return true;
                             }
                             else
@@ -229,7 +230,7 @@ namespace WizardsCode.Ink
                             }
                             break;
                         default:
-                            Debug.LogError("Direction to wait gives a unrecognized state to wait for: '" + waitForStates[i].m_WaitingForState + "'");
+                            Debug.LogError("Direction to wait gives a unrecognized state to wait for: '" + waitForStates[i].waitType + "'");
                             break;
                     }
                 }
@@ -246,8 +247,11 @@ namespace WizardsCode.Ink
                 if (isUIDirty || wasWaiting)
                 {
                     ProcessStoryChunk();
-                    UpdateGUI();
                     wasWaiting = false;
+                }
+                if (isUIDirty)
+                {
+                    UpdateGUI();
                 }
             } else
             {
@@ -888,6 +892,8 @@ namespace WizardsCode.Ink
                     {
                         WaitFor(new string[1] {$"{m_ActiveTimePerCharacter * speech.Length}"});
                     }
+
+                    isUIDirty = true;
                 }
                 // interpret it as narration or descriptive text
                 else
@@ -895,10 +901,10 @@ namespace WizardsCode.Ink
                     m_NewStoryText.Clear();
                     m_activeSpeaker = null;
                     m_NewStoryText.AppendLine(line);
+
+                    isUIDirty = true;
                 }
             }
-
-            isUIDirty = true;
         }
 
         /// <summary>
@@ -999,21 +1005,22 @@ namespace WizardsCode.Ink
 
     class WaitForState
     {
-        public BaseActorController m_WaitingForActor;
+        public enum WaitType { ReachTarget, Time }
+        public BaseActorController actor;
         // TODO: make this an enum
-        public string m_WaitingForState = "";
-        public float m_WaitUntilTime = float.NegativeInfinity;
+        public WaitType waitType;
+        public float endTime = float.NegativeInfinity;
 
         public WaitForState(float duration)
         {
-            m_WaitingForState = "Time";
-            this.m_WaitUntilTime = Time.timeSinceLevelLoad + duration;
+            waitType = WaitType.Time;
+            this.endTime = Time.timeSinceLevelLoad + duration;
         }
 
         public WaitForState(BaseActorController actor, string waitForState)
         {
-            m_WaitingForActor = actor;
-            m_WaitingForState = waitForState;
+            this.actor = actor;
+            waitType = WaitType.ReachTarget;
         }
     }
 }
