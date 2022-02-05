@@ -388,10 +388,8 @@ namespace WizardsCode.Ink
                 {
                     Debug.LogError($"MoveTo instruction with arguments {string.Join(",", args)} has an invalid argument in posision 3. Valid values are 'Wait' and 'NoWait'. Falling back to the default of 'Wait'. Please correct the Ink Script.");
                 }
-
-                WaitFor(new string[] { args[0], "ReachedTarget" });
             }
-
+            WaitFor(new string[] { args[0], "ReachedTarget" });
         }
 
         /// <summary>
@@ -888,7 +886,7 @@ namespace WizardsCode.Ink
                     }
                 }
                 // is it dialogue?
-                else if (Regex.IsMatch(line, "^(\\w*:)|^(\\w*\\s\\w*:)", RegexOptions.IgnoreCase))
+                else if (Regex.IsMatch(line, "^(\\w*:)|^(\\w*\\s\\w*:)", RegexOptions.IgnoreCase)) // we have an actors name
                 {
                     int indexOfColon = line.IndexOf(":");
                     string speaker = line.Substring(0, indexOfColon).Trim();
@@ -905,17 +903,20 @@ namespace WizardsCode.Ink
                     m_NewStoryText.Append(speech);
                     if (m_ActiveTimePerCharacter > 0)
                     {
-                        WaitFor(new string[1] {$"{m_ActiveTimePerCharacter * speech.Length}"});
+                        WaitFor(new string[1] { $"{m_ActiveTimePerCharacter * speech.Length}" });
                     }
 
                     isUIDirty = true;
                 }
-                // interpret it as narration or descriptive text
-                else
+                else // No named actore, so interpret it as narration or descriptive text
                 {
                     m_NewStoryText.Clear();
                     m_activeSpeaker = null;
                     m_NewStoryText.AppendLine(line);
+                    if (m_ActiveTimePerCharacter > 0)
+                    {
+                        WaitFor(new string[1] { $"{m_ActiveTimePerCharacter * line.Length}" });
+                    }
 
                     isUIDirty = true;
                 }

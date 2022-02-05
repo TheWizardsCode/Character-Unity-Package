@@ -62,10 +62,20 @@ namespace WizardsCode.Character
         #region Members
         protected NavMeshAgent m_Agent;
         protected Brain m_Brain;
+        private float lastStateChangeTime = float.NegativeInfinity;
+        private States m_state;
 
         public States state
         {
-            get; set;
+            get { return m_state; } 
+            set
+            {
+                if (m_state != value)
+                {
+                    lastStateChangeTime = Time.timeSinceLevelLoad;
+                    m_state = value;
+                }
+            }
         }
 
         private Vector3 m_CurrentLookAtPosition;
@@ -372,26 +382,27 @@ namespace WizardsCode.Character
                     hasMoved = true;
                     break;
                 case States.Arriving:
-
                     if (m_Agent.remainingDistance <= m_Agent.stoppingDistance)
                     {
+                        if (onArrived != null)
+                        {
+                            onArrived();
+                            onArrived = null;
+                        }
                         state = States.Arrived;
                     }
                     break;
                 case States.Arrived:
-                    if (onArrived != null)
+                    // Stay in the arrived state for a short while in case code or Ink narrative requires the character to do something. This small delay ensures that at least one frame passes before we allow the brain to make an independent decision.
+                    if (Time.timeSinceLevelLoad + 0.1 > lastStateChangeTime)
                     {
-                        onArrived();
-                        onArrived = null;
+                        state = States.Idle;
                     }
-                    state = States.Idle;
                     break;
                 default:
                     break;
             }
         }
-
-
 
         public bool IsMoving
         {
