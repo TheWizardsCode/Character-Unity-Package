@@ -207,7 +207,7 @@ namespace WizardsCode.Ink
                     {
                         case WaitForState.WaitType.ReachTarget:
                             if (waitForStates[i].actor.IsMoving) {
-                                Debug.Log($"Waiting for {waitForStates[i].actor} to reach destination.");
+                                //Debug.Log($"Waiting for {waitForStates[i].actor} to reach destination.");
                                 return true;
                             } else
                             {
@@ -359,12 +359,13 @@ namespace WizardsCode.Ink
 
         /// <summary>
         /// The MoveTo direction instructs an actor to move to a specific location. It is up to the ActorController
-        /// to decide how they should move.
+        /// to decide how they should move. By default the story
+        /// will wait for the actor to reach their mark before continuing. Add a NoWait parameter to allow the story to continue without waiting.
         /// </summary>
-        /// <param name="args"></param>
+        /// <param name="args">ACTOR, LOCATION [, Wait|No Wait]</param>
         void MoveTo(string[] args)
         {
-            if (!ValidateArgumentCount(Direction.MoveTo, args, 2))
+            if (!ValidateArgumentCount(Direction.MoveTo, args, 2, 3))
             {
                 return;
             }
@@ -376,6 +377,20 @@ namespace WizardsCode.Ink
             if (target == null) return;
 
             actor.MoveTo(target);
+
+            if (args.Length == 3)
+            {
+                string waitArg = args[2].ToLower().Trim();
+                if (waitArg == "no wait")
+                {
+                    return;
+                } else if (waitArg != "wait")
+                {
+                    Debug.LogError($"MoveTo instruction with arguments {string.Join(",", args)} has an invalid argument in posision 3. Valid values are 'Wait' and 'NoWait'. Falling back to the default of 'Wait'. Please correct the Ink Script.");
+                }
+
+                WaitFor(new string[] { args[0], "ReachedTarget" });
+            }
 
         }
 

@@ -372,6 +372,7 @@ namespace WizardsCode.Character
                     hasMoved = true;
                     break;
                 case States.Arriving:
+
                     if (m_Agent.remainingDistance <= m_Agent.stoppingDistance)
                     {
                         state = States.Arrived;

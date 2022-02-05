@@ -62,13 +62,7 @@ with a call to `SetPlayerControl(false)` in the API. Typically this would happen
 >>> PlayerControl: [ON_OR_OFF]
 ```
 
-## MoveTo 
 
-Move and actor to specific location. It is up to the ActorController to decide how they should get there.
-
-```
->>> MoveTo: ACTOR_NAME LOCATION_NAME
-```
 
 ## SetEmotion
 
@@ -79,10 +73,8 @@ this behaviour will be executed as soon as possible, as long as the necessary
 preconditions have been met and no higher priority item exists.
 
 ```
->>> Action: ACTOR_NAME BEHAVIOUR_NAME
+>>> Action: ACTOR_NAME, BEHAVIOUR_NAME
 ```
-
-## StopMoving
 
 ## AnimationParam
 
@@ -92,6 +84,8 @@ Set an animation parameter on an actor.
 >>> AnimationParam: ACTOR_NAME PARAMETER_NAME VALUE_IF_NOT_TRIGGER
 ```
 
+## Audio
+
 ## Camera
 
 Switch to a specific camera and optionally look at a named object.
@@ -100,23 +94,68 @@ Switch to a specific camera and optionally look at a named object.
 >>> Camera: CAMERA_NAME OPTIONAL_TARGET_NAME
 ```
 
+## MoveTo 
+
+Move and actor to specific location. It is up to the ActorController to decide how they should get there.
+
+By default the story will wait for the actor to reach their mark before continuing.
+Add a 'No Wait' parameter in position 3 to allow the story to continue without waiting.
+
+```
+>>> MoveTo: ACTOR_NAME, LOCATION_Name [, Wait|No Wait]
+```
+
+### Examples of MoveTo
+
+Move the Actor named `Pat` to a location named `Mark1`, and pause the story until they arrive.
+
+```
+>>> MoveTo: Pat, Mark1
+```
+
+Identical to above, but with an explicit wait instruction. This serves no technical purpose but can add readability.
+
+```
+>>> MoveTo: Pat, Mark1, Wait
+```
+
+Move the Actor named `Pat` to a location named `Mark1`, but allow the story to continue while they move.
+
+```
+>>> MoveTo: Pay, Mark1, NoWait
+```
+
 ## Music
+
+## StopMoving
 
 ## WaitFor
 
-Wait for a particular game state. Supported states are:
+Wait for a particular game state. The actor will decide on how to get to the location.
 
-ReachedTarget - waits for the actor to have reached their move target
+Supported wait states are:
+  * ReachedTarget - wait until an actor has finished moving to a target
+  * Time - wait a specified amount of time
+
+```
+>>> WaitFor: ACTOR_NAME, LOCATION_Name [, Wait|No Wait]
+```
+
+### Examples of WaitFor command
+
+#### ReachedTarget
+Waits for the actor to have reached their current move target. 
+If the target is changed during this wait cycle this wait will end when reaching the new target.
 
 ```
 >>> WaitFor: ACTOR_NAME, ReachedTarget
 ```
 
-Time - waits for a duration (in seconds)
+#### Time
+Waits for a duration (in seconds)
 
 ```
 >>> WaitFor: 8
 ```
 
-## Audio
 
