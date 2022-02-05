@@ -13,7 +13,7 @@ namespace WizardsCode.Character
     [RequireComponent(typeof(NavMeshAgent))]
     public class BaseActorController : MonoBehaviour
     {
-        public enum States { Idle, Moving, Arriving, Arrived, Active }
+        public enum States { Idle, Moving, Arriving, Arrived }
 
         #region InspectorParameters
         [Header("Character Ground Movement")]
@@ -61,9 +61,14 @@ namespace WizardsCode.Character
 
         #region Members
         protected NavMeshAgent m_Agent;
-        protected Brain m_Brain;
         private float lastStateChangeTime = float.NegativeInfinity;
         private States m_state;
+
+        public Brain brain
+        {
+            get;
+            internal set;
+        }
 
         public States state
         {
@@ -265,7 +270,7 @@ namespace WizardsCode.Character
             {
                 m_Agent.stoppingDistance = ArrivingDistance / 2;
             }
-            m_Brain = GetComponentInChildren<Brain>();
+            brain = GetComponentInChildren<Brain>();
             MoveTargetPosition = transform.position;
 
             // Look IK Setup

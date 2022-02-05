@@ -45,14 +45,6 @@ Prompt an actor with a specific cue. Note that cues must be known to the InkMana
 >>> Cue: ACTOR_NAME CUE_NAME
 ```
 
-## TurnToFace
-
-The actor will turn to face the object identified.
-
-```
->>> TurnToFace: ACTOR_NAME OBJECT_NAME
-```
-
 ## PlayerControl
 
 Sets the player control to either On or Off. If on then the Ink story will not progress and no UI will be shown until it is renabled
@@ -62,10 +54,6 @@ with a call to `SetPlayerControl(false)` in the API. Typically this would happen
 >>> PlayerControl: [ON_OR_OFF]
 ```
 
-
-
-## SetEmotion
-
 ## Action
 
 Tell an actor to prioritize a particular behaviour. Under normal circumstances
@@ -74,6 +62,16 @@ preconditions have been met and no higher priority item exists.
 
 ```
 >>> Action: ACTOR_NAME, BEHAVIOUR_NAME
+```
+
+## AI
+
+Places an actor under, or removes an actor from being under AI control. When an actor with an AI brain is under AI control the brain will be able to influence the actors actions. If AI control is OFF then Ink scripts (or another script) have full control over the actor. If AI is on you can still influence what the actor will do with directions, but once a direction is completed the AI brain will take over immediately.
+
+That is, when AI control is ON directions in the script will take precedence over the AI Brain, but when AI control is off the AI brain can take actions.
+
+```
+>>> AI: [ON|OFF]
 ```
 
 ## AnimationParam
@@ -127,7 +125,17 @@ Move the Actor named `Pat` to a location named `Mark1`, but allow the story to c
 
 ## Music
 
+## SetEmotion
+
 ## StopMoving
+
+## TurnToFace
+
+The actor will turn to face the object identified.
+
+```
+>>> TurnToFace: ACTOR_NAME OBJECT_NAME
+```
 
 ## WaitFor
 

@@ -41,7 +41,8 @@ namespace WizardsCode.Ink
             //TODO remove this as a preferred command, way too long, merge with "Music"?
             SetPrimaryBlendedMusicTrack,
             WaitFor,
-            Audio
+            Audio,
+            AI
         }
 
         [Header("Script")]
@@ -96,6 +97,7 @@ namespace WizardsCode.Ink
 
         private bool m_IsDisplayingUI = false;
         private BaseActorController m_activeSpeaker;
+        private bool isAIActive = true;
 
         internal bool IsDisplayingUI
         {
@@ -316,14 +318,14 @@ namespace WizardsCode.Ink
             //if (seconds < m_stopTalkingCue.layerWeightChangeTime) return;
 
             m_activeSpeaker.Prompt(m_startTalkingCue);
-            m_activeSpeaker.state = BaseActorController.States.Active;
+            m_activeSpeaker.brain.active = false;
             Invoke("StopTalking", seconds);
         }
 
         void StopTalking()
         {
             m_activeSpeaker.Prompt(m_stopTalkingCue);
-            m_activeSpeaker.state = BaseActorController.States.Idle;
+            m_activeSpeaker.brain.active = isAIActive;
         }
 
         /// <summary>
@@ -812,9 +814,6 @@ namespace WizardsCode.Ink
             // auto advance if there is only one choice and we are not waiting
             if (!m_Story.canContinue && !isWaiting)
             {
-                if (m_Story.currentChoices.Count == 0) {
-                    Debug.LogError("We are in a can't continue state but we also don't have any choices active. Is there a problem with the Ink script?");
-                }
                 if (m_Story.currentChoices.Count == 1)
                 {
                     m_Story.ChooseChoiceIndex(0);
@@ -880,6 +879,9 @@ namespace WizardsCode.Ink
                         case Direction.Audio:
                             Audio(args);
                             break;
+                        case Direction.AI:
+                            AI(args);
+                            break;
                         default:
                             Debug.LogError("Unknown Direction: " + line);
                             break;
@@ -921,6 +923,32 @@ namespace WizardsCode.Ink
                     isUIDirty = true;
                 }
             }
+        }
+
+        /// <summary>
+        /// Places an actor under, or removes an actor from being under AI control. When an actor with an AI brain is under AI control the brain will be able to influence the actors actions. If AI control is OFF then Ink scripts (or another script) have full control over the actor. If AI is on you can still influence what the actor will do with directions, but once a direction is completed the AI brain will take over immediately.
+        /// </summary>
+        /// <param name="args">ACTOR_NAME On|Off</param>
+        void AI(string[] args)
+        {
+            ValidateArgumentCount(Direction.AI, args, 2);
+            
+            BaseActorController actor = FindActor(args[0].Trim());
+
+            if (args[1].Trim().ToLower() == "on")
+            {
+                isAIActive = true;
+                actor.brain.active = true;
+            }
+            else if (args[1].Trim().ToLower() == "off")
+            {
+                isAIActive = false;
+                actor.brain.active = false;
+            } else
+            {
+                Debug.LogError($"AI direction has incorrect parameters of {string.Join(", ", args)}");
+            }
+
         }
 
         /// <summary>
@@ -1007,7 +1035,12 @@ namespace WizardsCode.Ink
             if (!string.IsNullOrEmpty(error))
             {
                 msg = error + msg;
-                Debug.LogError(msg);
+                Debug.LogError(msg); 
+                if (!string.IsNullOrEmpty(warning))
+                {
+                    msg = warning + msg;
+                    Debug.LogWarning(msg);
+                }
                 return false;
             } else if (!string.IsNullOrEmpty(warning))
             {

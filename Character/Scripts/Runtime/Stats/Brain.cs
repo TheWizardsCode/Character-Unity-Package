@@ -33,6 +33,14 @@ namespace WizardsCode.Stats {
         [SerializeField, Tooltip("The icon to use when there is an active blocking behaviour, but that behaviour does not have an icon.")]
         Sprite m_MissingIcon;
 
+        /// <summary>
+        /// Set whether or not this brain is active. If not active no decisions will be made and no attempt to control the character will take place.
+        /// </summary>
+        public bool active
+        {
+            get; set;
+        }
+
         BaseActorController m_Controller;
         List<AbstractAIBehaviour> m_AvailableBehaviours = new List<AbstractAIBehaviour>();
         List<AbstractAIBehaviour> m_ActiveNonBlockingBehaviours = new List<AbstractAIBehaviour>();
@@ -186,6 +194,8 @@ namespace WizardsCode.Stats {
 
         internal override void Update()
         {
+            if (!active) return;
+
             if (!isReadyToUpdateBehaviour) return;
 
             if (TargetInteractable != null && Vector3.SqrMagnitude(TargetInteractable.transform.position - Actor.MoveTargetPosition) > 0.7f)
