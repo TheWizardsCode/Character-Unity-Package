@@ -13,7 +13,7 @@ namespace WizardsCode.Character
     [RequireComponent(typeof(NavMeshAgent))]
     public class BaseActorController : MonoBehaviour
     {
-        public enum States { Idle, Moving, Arriving, Arrived }
+        public enum States { Idle, Moving, Arriving, Arrived, Active }
 
         #region InspectorParameters
         [Header("Character Ground Movement")]
@@ -63,7 +63,10 @@ namespace WizardsCode.Character
         protected NavMeshAgent m_Agent;
         protected Brain m_Brain;
 
-        protected States m_State;
+        public States state
+        {
+            get; set;
+        }
 
         private Vector3 m_CurrentLookAtPosition;
         private float lookAtWeight = 0.0f;
@@ -178,6 +181,7 @@ namespace WizardsCode.Character
                 if (Vector3.Distance(m_Agent.destination, value) > m_Agent.stoppingDistance)
                 {
                     m_Agent.SetDestination(value);
+                    state = States.Moving;
                 }
             }
         }
@@ -334,14 +338,14 @@ namespace WizardsCode.Character
                 }
             }
         }
-
+        
         /// <summary>
         /// if appropriate update the current state of the actor and make any animation callbacks
         /// necessary.
         /// </summary>
         private void ManageState()
         {
-            switch (m_State)
+            switch (state)
             {
                 case States.Idle:
                     if (hasMoved && onStationary != null)
@@ -351,13 +355,13 @@ namespace WizardsCode.Character
                         hasMoved = false;
                     } else if (m_Agent.remainingDistance > ArrivingDistance)
                     {
-                        m_State = States.Moving;
+                        state = States.Moving;
                     }
                     break;
                 case States.Moving:
                     if (!m_Agent.pathPending && m_Agent.remainingDistance <= ArrivingDistance)
                     {
-                        m_State = States.Arriving;
+                        state = States.Arriving;
                     }
 
                     hasMoved = true;
@@ -371,7 +375,7 @@ namespace WizardsCode.Character
 
                     if (m_Agent.remainingDistance <= m_Agent.stoppingDistance)
                     {
-                        m_State = States.Arrived;
+                        state = States.Arrived;
                     }
                     break;
                 case States.Arrived:
@@ -380,7 +384,7 @@ namespace WizardsCode.Character
                         onArrived();
                         onArrived = null;
                     }
-                    m_State = States.Idle;
+                    state = States.Idle;
                     break;
                 default:
                     break;
@@ -393,29 +397,8 @@ namespace WizardsCode.Character
         {
             get
             {
-                //TODO Can we simplify this and look at the m_State value, e.g. m_State == States.Moving
-                if (m_Agent.hasPath && !m_Agent.pathPending)
-                {
-                    if (m_Agent.remainingDistance <= m_Agent.stoppingDistance)
-                    {
-                        return false;
-                    } else
-                    {
-                        return true;
-                    }
-                } else if (!m_Agent.hasPath && m_Agent.pathPending)
-                {
-                    return true;
-                }
-
-                return false;
+                return state == States.Moving;
             }
-        }
-
-        [Obsolete("Use IsMoving instead")] // v0.0.11
-        public bool HasReachedTarget
-        {
-            get { return IsMoving; }
         }
 
         /// <summary>
@@ -445,7 +428,7 @@ namespace WizardsCode.Character
         }
 
         public bool isIdle { 
-            get { return m_State == States.Idle; }
+            get { return state == States.Idle; }
         }
 
         /// <summary>
@@ -466,22 +449,7 @@ namespace WizardsCode.Character
             isRotating = false;
         }
 
-        /// <summary>
-        /// Start talking animations.
-        /// </summary>
-        public bool talking
-        {
-            get { return m_AnimationLayers.isTalking; }
-            set
-            {
-                if (m_AnimationLayers.isTalking != value)
-                {
-                    m_AnimationLayers.isTalking = value;
-                }
-            }
-        }
-
-        [Obsolete("Use `talking = true` instead. Deprecated in 0.4.0.")]
+        [Obsolete("Use an AnimationCuePrompt instead. Deprecated in 0.4.0.")]
         public void StartTalking()
         {
             if (m_AnimationLayers != null)
@@ -490,7 +458,7 @@ namespace WizardsCode.Character
             }
         }
 
-        [Obsolete("Use `talking = false` instead. Deprecated in 0.4.0.")]
+        [Obsolete("Use an AnimationCuePrompt instead. Deprecated in 0.4.0.")]
         public void StopTalking()
         {
             if (m_AnimationLayers != null)

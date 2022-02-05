@@ -1,6 +1,7 @@
 ﻿#if SALSA
 using CrazyMinnow.SALSA;
 #endif
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,6 +32,7 @@ namespace WizardsCode.Animation
         // TODO Should look up the index of the talking layer
         private const int TALKING_LAYER_INDEX = 1;
 
+        [Obsolete("You should use an AnimationActorCue instead.")]
         private void Awake()
         {
             m_animator = GetComponentInParent<Animator>();

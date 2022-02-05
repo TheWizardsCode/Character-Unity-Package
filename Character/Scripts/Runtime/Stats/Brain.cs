@@ -164,7 +164,7 @@ namespace WizardsCode.Stats {
             return m_AvailableBehaviours.Remove(behaviour);
         }
 
-        internal bool IsReadyToUpdateBehaviour
+        internal bool isReadyToUpdateBehaviour
         {
             get
             {
@@ -186,7 +186,7 @@ namespace WizardsCode.Stats {
 
         internal override void Update()
         {
-            if (!IsReadyToUpdateBehaviour) return;
+            if (!isReadyToUpdateBehaviour) return;
 
             if (TargetInteractable != null && Vector3.SqrMagnitude(TargetInteractable.transform.position - Actor.MoveTargetPosition) > 0.7f)
             {

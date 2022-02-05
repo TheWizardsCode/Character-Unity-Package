@@ -39,6 +39,12 @@ Note that actors and cues that are to be used need to be setup in the `InkManage
 
 ## Cue
 
+Prompt an actor with a specific cue. Note that cues must be known to the InkManager by adding them to the Cues collection in the inspector.
+
+```
+>>> Cue: ACTOR_NAME CUE_NAME
+```
+
 ## TurnToFace
 
 The actor will turn to face the object identified.
@@ -80,6 +86,12 @@ preconditions have been met and no higher priority item exists.
 
 ## AnimationParam
 
+Set an animation parameter on an actor. 
+
+```
+>>> AnimationParam: ACTOR_NAME PARAMETER_NAME VALUE_IF_NOT_TRIGGER
+```
+
 ## Camera
 
 Switch to a specific camera and optionally look at a named object.
@@ -97,7 +109,14 @@ Wait for a particular game state. Supported states are:
 ReachedTarget - waits for the actor to have reached their move target
 
 ```
->>> WaitFor: ACTOR_NAME, STATE
+>>> WaitFor: ACTOR_NAME, ReachedTarget
 ```
+
+Time - waits for a duration (in seconds)
+
+```
+>>> WaitFor: 8
+```
+
 ## Audio
 

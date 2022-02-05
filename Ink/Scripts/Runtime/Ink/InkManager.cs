@@ -1,6 +1,5 @@
 #if INK_PRESENT
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using Ink.Runtime;
 using TMPro;
@@ -12,7 +11,6 @@ using System;
 using static WizardsCode.Character.EmotionalState;
 using WizardsCode.Stats;
 using Cinemachine;
-using System.Globalization;
 using UnityEngine.Serialization;
 
 using System.Text.RegularExpressions;
@@ -56,6 +54,12 @@ namespace WizardsCode.Ink
         [SerializeField, Tooltip("Should the story start as soon as the game starts. If this is set to false the story will not start until a trigger or similar is set.")]
         bool m_PlayOnAwake = true;
 
+        [Header("Standard Cues")]
+        [SerializeField, Tooltip("The cue to send to an actor when they start talking.")]
+        ActorCueAnimator m_startTalkingCue;
+        [SerializeField, Tooltip("The cue to send to an actor when they hav finished talking.")]
+        ActorCueAnimator m_stopTalkingCue;
+
         [Header("Camera, Lights and Sound")]
         [SerializeField, Tooltip("The Cinemachine Brain used to control the virtual cameras.")]
         CinemachineBrain cinemachine;
@@ -79,28 +83,26 @@ namespace WizardsCode.Ink
         [SerializeField, Tooltip("Dialogue and narration bubble controller that will display the text for the player.")]
         [FormerlySerializedAs("m_TextBubbleComp")]
         TextBubbleController m_TextBubble;
-        [SerializeField, Tooltip("Should the UI always pause for player input, even when there are no choices to be made?")]
-        bool m_AlwaysWaitForPlayer = true;
+        [SerializeField, Tooltip("When the Ink story calls for an actor to tall how longer, per character in the text, should they be kept in an active state. The actor will not carry out any other actions until this time has elepased. Set to 0 to not have the speaker wait.")]
+        float m_ActiveTimePerCharacter = 0.01f;
 
 
         Story m_Story;
-        bool m_IsUIDirty = false;
+        bool isUIDirty = false;
         StringBuilder m_NewStoryText = new StringBuilder();
-        string m_CurrentSpeakerName = "";
-
-        //TODO REFACTOR managing the waiting for directions has become unwieldly. There are too many combinations of variables with unclear names
+        
+        List<WaitForState> waitForStates = new List<WaitForState>();
         bool wasWaiting = false;
-        private BaseActorController m_WaitingForActor;
-        private string m_WaitingForState = "";
-        private float m_WaitUntilTime = float.NegativeInfinity;
 
         private bool m_IsDisplayingUI = false;
+        private BaseActorController m_activeSpeaker;
+
         internal bool IsDisplayingUI
         {
             get { return m_IsDisplayingUI; }
             set {
                 m_IsDisplayingUI = value;
-                m_IsUIDirty = value;
+                isUIDirty = value;
             }
         }
 
@@ -195,70 +197,53 @@ namespace WizardsCode.Ink
             }
         }
 
-        private bool IsWaitingFor
+        private bool isWaiting
         {
             get
             {
-                if (m_WaitingForActor == null && m_WaitUntilTime < 0 && m_WaitingForState == "")
+                for (int i = waitForStates.Count - 1; i >= 0; i--)
                 {
-                    return false;
+                    switch (waitForStates[i].m_WaitingForState)
+                    {
+                        case "ReachedTarget":
+                            if (waitForStates[i].m_WaitingForActor.IsMoving) {
+                                return true;
+                            } else
+                            {
+                                wasWaiting = true;
+                                waitForStates.RemoveAt(i);
+                                if (waitForStates.Count == 0) return false;
+                            }
+                            break;
+                        case "Time":
+                            if (Time.timeSinceLevelLoad < waitForStates[i].m_WaitUntilTime)
+                            {
+                                Debug.Log($"Waiting until {waitForStates[i].m_WaitUntilTime} currently {Time.timeSinceLevelLoad}");
+                                return true;
+                            }
+                            else
+                            {
+                                wasWaiting = true;
+                                waitForStates.RemoveAt(i);
+                                if (waitForStates.Count == 0) return false;
+                            }
+                            break;
+                        default:
+                            Debug.LogError("Direction to wait gives a unrecognized state to wait for: '" + waitForStates[i].m_WaitingForState + "'");
+                            break;
+                    }
                 }
-
-                // todo - handle the case where several waiting states are active simultaneously
-                switch (m_WaitingForState)
-                {
-                    case "ReachedTarget":
-                        if (m_WaitingForActor.IsMoving)
-                        {
-                            wasWaiting = false;
-                            return true;
-                        }
-                        else
-                        {
-                            ExitWaitingState();
-                            return false;
-                        }
-                    case "Time":
-                        if (Time.timeSinceLevelLoad >= m_WaitUntilTime)
-                        {
-                            ExitWaitingState();
-                            return false;
-                        } else
-                        {
-                            return true;
-                        }
-                    case "PlayerInput":
-                        return true; // as of writing, pressing space will automatically exit the waiting state
-                    default:
-                        Debug.LogError("Direction to wait gives a unrecognized state to wait for: '" + m_WaitingForState + "'");
-                        return false;
-                }
+                return false;
             }
-        }
-
-        private void ExitWaitingState()
-        {
-            m_WaitingForActor = null;
-            m_WaitingForState = "";
-            m_WaitUntilTime = float.NegativeInfinity;
-            wasWaiting = true;
         }
 
         public void Update()
         {
-            if (IsWaitingFor)
-            {
-                if (m_WaitingForState == "PlayerInput" &&
-                        (Input.GetKeyUp(KeyCode.Space) || Input.GetMouseButtonUp(0)))
-                {
-                    ExitWaitingState();
-                }
-                return;
-            }
+            if (isWaiting) return;
 
             if (IsDisplayingUI)
             {
-                if (m_IsUIDirty || wasWaiting || !m_AlwaysWaitForPlayer)
+                if (isUIDirty || wasWaiting)
                 {
                     ProcessStoryChunk();
                     UpdateGUI();
@@ -284,19 +269,21 @@ namespace WizardsCode.Ink
         {
             EraseUI();
 
-            BaseActorController speaker = FindActor(m_CurrentSpeakerName);
-            if (speaker)
-            {
-                speaker.talking = true;
-            }
-            m_TextBubble.SetText(m_CurrentSpeakerName, m_NewStoryText.ToString(), true);
+            string text = m_NewStoryText.ToString();
 
-            if (m_AlwaysWaitForPlayer || m_Story.currentChoices.Count > 1)
+            if (m_activeSpeaker)
+            {
+                m_TextBubble.gameObject.SetActive(true);
+                m_TextBubble.SetText(m_activeSpeaker.name, text, true);
+            } else
+            {
+                m_TextBubble.gameObject.SetActive(false);
+            }
+
+            if (m_Story.currentChoices.Count > 1)
             {
                 for (int i = 0; i < m_Story.currentChoices.Count; i++)
                 {
-                    if (m_WaitingForState == "PlayerInput") m_WaitingForState = "";
-
                     choicesPanel.gameObject.SetActive(true);
                     Choice choice = m_Story.currentChoices[i];
                     Button choiceButton = Instantiate(m_ChoiceButtonPrefab) as Button;
@@ -312,7 +299,27 @@ namespace WizardsCode.Ink
                 }
             }
 
-            m_IsUIDirty = false;
+            isUIDirty = false;
+        }
+
+        /// <summary>
+        /// Set a actor to talk for a number of seconds.
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="seconds"></param>
+        void TalkFor(BaseActorController actor, float seconds)
+        {
+            //if (seconds < m_stopTalkingCue.layerWeightChangeTime) return;
+
+            m_activeSpeaker.Prompt(m_startTalkingCue);
+            m_activeSpeaker.state = BaseActorController.States.Active;
+            Invoke("StopTalking", seconds);
+        }
+
+        void StopTalking()
+        {
+            m_activeSpeaker.Prompt(m_stopTalkingCue);
+            m_activeSpeaker.state = BaseActorController.States.Idle;
         }
 
         /// <summary>
@@ -323,9 +330,13 @@ namespace WizardsCode.Ink
         {
             m_Story.ChooseChoiceIndex(choice.index);
             m_NewStoryText.Clear();
-            m_IsUIDirty = true;
+            isUIDirty = true;
         }
 
+        /// <summary>
+        /// Prompt an actor with a specific cue. Note that cues must be known to the InkManager by adding them to the Cues collection in the inspector.
+        /// </summary>
+        /// <param name="args">ACTOR_NAME CUE_NAME</param>
         void PromptCue(string[]args)
         {
             if (!ValidateArgumentCount(Direction.Cue, args, 2))
@@ -613,6 +624,7 @@ namespace WizardsCode.Ink
         ///
         /// </summary>
         /// <param name="args">[Tempo] [Style]</param>
+        [Obsolete("Use Music instead. Deprecated in 0.0.2")]
         void SetPrimaryBlendedMusicTrack(string[] args)
         {
             if (!ValidateArgumentCount(Direction.Music, args, 1))
@@ -652,6 +664,7 @@ namespace WizardsCode.Ink
         /// Wait for a particular game state. Supported states are:
         ///
         /// ReachedTarget - waits for the actor to have reached their move target
+        /// Time - waits for a duration (in seconds)
         ///
         /// </summary>
         /// <param name="args">[Actor] [State]</param>
@@ -666,15 +679,12 @@ namespace WizardsCode.Ink
             bool isFloat = float.TryParse(param1, out float time);
             if (isFloat)
             {
-                m_WaitingForState = "Time";
-                m_WaitUntilTime = Time.timeSinceLevelLoad + time;
+                waitForStates.Add(new WaitForState(time));
             }
             else
             {
-                m_WaitingForActor = FindActor(param1);
-                m_WaitingForState = args[1].Trim();
+                waitForStates.Add(new WaitForState(FindActor(param1), args[1].Trim()));
             }
-
         }
 
         void TurnToFace(string[] args)
@@ -751,7 +761,7 @@ namespace WizardsCode.Ink
 
             if (logError && actor == null)
             {
-                Debug.LogError("Script contains a direction for " + actorName + ". However, the actor cannot be found.");
+                Debug.LogError($"Ink script contains a direction for actor called '{actorName}. However, the actor cannot be found.");
             }
 
             return actor;
@@ -782,14 +792,20 @@ namespace WizardsCode.Ink
         /// </summary>
         void ProcessStoryChunk()
         {
-            string line;
-            
-            if (!m_Story.canContinue && !IsWaitingFor && !m_AlwaysWaitForPlayer && m_Story.currentChoices.Count > 0)
+            // auto advance if there is only one choice and we are not waiting
+            if (!m_Story.canContinue && !isWaiting)
             {
-                m_Story.ChooseChoiceIndex(0);
+                if (m_Story.currentChoices.Count == 0) {
+                    Debug.LogError("We are in a can't continue state but we also don't have any choices active. Is there a problem with the Ink script?");
+                }
+                if (m_Story.currentChoices.Count == 1)
+                {
+                    m_Story.ChooseChoiceIndex(0);
+                }
             }
 
-            while (m_Story.canContinue && !IsWaitingFor)
+            string line;
+            while (m_Story.canContinue && !isWaiting)
             {
                 line = m_Story.Continue();
 
@@ -855,35 +871,34 @@ namespace WizardsCode.Ink
                 // is it dialogue?
                 else if (Regex.IsMatch(line, "^(\\w*:)|^(\\w*\\s\\w*:)", RegexOptions.IgnoreCase))
                 {
-                    // regex above will match "Bestie: hi" or "Bus Driver: sit down!", and "techie:nice camera". warning: only allows a single space!
                     int indexOfColon = line.IndexOf(":");
-                    m_CurrentSpeakerName = line.Substring(0, indexOfColon).Trim();
-                    m_NewStoryText.Clear();
-                    m_NewStoryText.Append(line.Substring(indexOfColon + 1).Trim());
+                    string speaker = line.Substring(0, indexOfColon).Trim();
+                    string speech = line.Substring(indexOfColon + 1).Trim();
 
-                    // require player input to continue, unless a choice pops up
-                    if (m_AlwaysWaitForPlayer)
+                    m_activeSpeaker = FindActor(speaker);
+                    if (m_activeSpeaker)
                     {
-                        m_WaitingForState = "PlayerInput";
+                        TalkFor(m_activeSpeaker, speech.Length * m_ActiveTimePerCharacter);
+                    }
+
+                    m_NewStoryText.Clear();
+                    
+                    m_NewStoryText.Append(speech);
+                    if (m_ActiveTimePerCharacter > 0)
+                    {
+                        WaitFor(new string[1] {$"{m_ActiveTimePerCharacter * speech.Length}"});
                     }
                 }
                 // interpret it as narration or descriptive text
                 else
                 {
-                    //m_NewStoryText.Clear();
-                    m_CurrentSpeakerName = "";
+                    m_NewStoryText.Clear();
+                    m_activeSpeaker = null;
                     m_NewStoryText.AppendLine(line);
                 }
-
-                // Process Tags
-                // currently unused
-                // List<string> tags = m_Story.currentTags;
-                // for (int i = 0; i < tags.Count; i++)
-                // {
-                // }
             }
 
-            m_IsUIDirty = true;
+            isUIDirty = true;
         }
 
         /// <summary>
@@ -979,6 +994,26 @@ namespace WizardsCode.Ink
             }
 
             return true;
+        }
+    }
+
+    class WaitForState
+    {
+        public BaseActorController m_WaitingForActor;
+        // TODO: make this an enum
+        public string m_WaitingForState = "";
+        public float m_WaitUntilTime = float.NegativeInfinity;
+
+        public WaitForState(float duration)
+        {
+            m_WaitingForState = "Time";
+            this.m_WaitUntilTime = Time.timeSinceLevelLoad + duration;
+        }
+
+        public WaitForState(BaseActorController actor, string waitForState)
+        {
+            m_WaitingForActor = actor;
+            m_WaitingForState = waitForState;
         }
     }
 }

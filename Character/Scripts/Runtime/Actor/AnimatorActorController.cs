@@ -45,7 +45,7 @@ namespace WizardsCode.Character
 
             if (speedParam > 0.01 || turn > 0.01)
             {
-                m_State = States.Moving;
+                state = States.Moving;
             }
         }
 
