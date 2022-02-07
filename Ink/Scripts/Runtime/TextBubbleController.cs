@@ -165,7 +165,7 @@ namespace WizardsCode.Ink
         public void AddText(BaseActorController speaker, string text, bool bPlaySpeakingSounds)
         {
             ShowWidget(true);
-            if (m_ActiveSpeaker != speaker)
+            if (m_ActiveSpeaker != null && m_ActiveSpeaker != speaker)
             {
                 ClearText();
                 m_StoryText.maxVisibleCharacters = 0;

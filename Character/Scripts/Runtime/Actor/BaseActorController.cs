@@ -144,6 +144,7 @@ namespace WizardsCode.Character
                 {
                     GameObject go = new GameObject($"Look At target for {gameObject.name}");
                     go.transform.SetParent(gameObject.transform);
+                    m_LookAtTarget = go.transform;
                     ResetLookAt();
                 }
                 return m_LookAtTarget;
