@@ -2,12 +2,15 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
+using WizardsCode.Character;
 using Random = UnityEngine.Random;
 
 namespace WizardsCode.Ink
 {
     public class TextBubbleController : MonoBehaviour
     {
+        #region Inspector Fields
         [SerializeField]
         [FormerlySerializedAs("The GUI component that will display the speakers name.")]
         TextMeshProUGUI m_SpeakersName;
@@ -16,11 +19,10 @@ namespace WizardsCode.Ink
         [FormerlySerializedAs("The GUI component that will display the complete text of this chunk.")]
         TextMeshProUGUI m_StoryText;
 
-
         [SerializeField]
         [FormerlySerializedAs("Whether or not sounds should be played.")]
         bool m_PlaySpeakingSounds = true;
-
+        private Coroutine revealCo;
         [SerializeField]
         [FormerlySerializedAs("An array of sounds that will be played while narration or speech is occuring")]
         AudioClip[] m_SpeechSounds;
@@ -44,12 +46,32 @@ namespace WizardsCode.Ink
         [SerializeField]
         [FormerlySerializedAs("_GrowShrinkSpeed")]
         float m_GrowOrShrinkSpeed = 4.0f;
+        #endregion
 
 
         float _targetScale = 1.0f;
         float _closeEnough = 0.01f; // small enough to be invisible
         float _prettySmall = 0.1f; // small enough to be able to detect we're aiming for small
+        private BaseActorController m_ActiveSpeaker;
+        private ScrollRect scrollRect;
 
+        /// <summary>
+        /// Test to see if the controller is actively displaying text. If the process has completed then this will return true.
+        /// </summary>
+        public bool isFinished
+        {
+            get;
+            private set;
+        }
+
+        void Start()
+        {
+            isFinished = true;
+            m_StoryText.maxVisibleCharacters = 0;
+            ClearText();
+            ShowWidget(false);
+            scrollRect = GetComponentInChildren<ScrollRect>();
+        }
         IEnumerator ShowOrHide()
         {
             RectTransform rectTransform = GetComponent<RectTransform>();
@@ -83,6 +105,8 @@ namespace WizardsCode.Ink
         /** reveal chars, once per pass */
         IEnumerator RevealChars()
         {
+            isFinished = false;
+
             while (m_StoryText.maxVisibleCharacters < m_StoryText.text.Length)
             {
                 m_StoryText.maxVisibleCharacters++;
@@ -91,8 +115,13 @@ namespace WizardsCode.Ink
                     ProduceSpeechSound(m_StoryText.text.ToCharArray()[m_StoryText.maxVisibleCharacters - 1]);
                 }
 
+                yield return new WaitForEndOfFrame();
+                scrollRect.verticalNormalizedPosition = 0;
+
                 yield return new WaitForSeconds(m_SecondsBetweenPrintingChars);
             }
+
+            isFinished = true;
         }
 
         /** produce a very short sound based on what type of char is passed in. */
@@ -128,42 +157,68 @@ namespace WizardsCode.Ink
             return _targetScale < _prettySmall;
         }
 
-        /** note: this invokes show widget automatically */
-        public void SetText(string speakersName, string text, bool bPlaySpeakingSounds)
+        /// <summary>
+        /// Add text to the current speech bubble. If the speaker has changed then clear the existing text, otherwise add the new text to existing text. The number of displayed characters will remain the same. This has the effect of continuing the display cycle.
+        /// </summary>
+        /// <param name="speaker">The curent speaker. Set to null if this is descriptive text or an unnamed narrator.</param>
+        /// <param name="text">The text to display. This will be displayed one character at a time based on the default delay between characters (set in the inspector, use `SetText(speaker, text, playSounds, delay)` to override.</param>
+        public void AddText(BaseActorController speaker, string text, bool bPlaySpeakingSounds)
+        {
+            ShowWidget(true);
+            if (m_ActiveSpeaker != speaker)
+            {
+                ClearText();
+                m_StoryText.maxVisibleCharacters = 0;
+            }
+            m_ActiveSpeaker = speaker;
+
+            int displayedCharacters = m_StoryText.maxVisibleCharacters;
+            text = m_StoryText.text + text;
+            SetText(speaker, text, bPlaySpeakingSounds);
+            m_StoryText.maxVisibleCharacters = displayedCharacters;
+        }
+
+        /// <summary>
+        /// Set the test to a specific value. Any previous content will be removed.
+        /// </summary>
+        /// <param name="speaker">The curent speaker. Set to null if this is descriptive text or an unnamed narrator.</param>
+        /// <param name="text">The text to display. This will be displayed one character at a time based on the default delay between characters (set in the inspector, use `SetText(speaker, text, playSounds, delay)` to override.</param>
+        /// <param name="bPlaySpeakingSounds"></param>
+        public void SetText(BaseActorController speaker, string text, bool bPlaySpeakingSounds)
         {
             ShowWidget(true);
 
-            m_SpeakersName.gameObject.SetActive(!string.IsNullOrEmpty(speakersName));
+            m_ActiveSpeaker = speaker;
+            if (speaker)
+            {
+                m_SpeakersName.text = speaker.displayName;
+                // FIXME: shouldn't be navigating the tree like this, make the speakers name element the root object and discover the text object beneath
+                m_SpeakersName.transform.parent.gameObject.SetActive(true);
+            } else
+            {
+                // FIXME: shouldn't be navigating the tree like this, make the speakers name element the root object and discover the text object beneath
+                m_SpeakersName.transform.parent.gameObject.SetActive(false);
+            }
 
-            m_SpeakersName.text = speakersName;
             m_StoryText.text = text;
-
-            // this is what lets us show characters one at a time: we increment this later
             m_StoryText.maxVisibleCharacters = 0;
 
             m_PlaySpeakingSounds = bPlaySpeakingSounds;
 
-            StartCoroutine("RevealChars");
+            revealCo = StartCoroutine(RevealChars());
         }
 
         /** note: this invokes show widget automatically */
-        public void SetText(string speakersName, string text, bool bPlaySpeakingSounds, float secondsBetweenPrintingChars)
+        public void SetText(BaseActorController speaker, string text, bool bPlaySpeakingSounds, float secondsBetweenPrintingChars)
         {
             ShowWidget(true);
             m_SecondsBetweenPrintingChars = secondsBetweenPrintingChars;
-            SetText(speakersName, text, bPlaySpeakingSounds);
-        }
-
-        /** convenience method used in test scene in lieu of having a test suite */
-        public void TestDisplayingText()
-        {
-            SetText("buddy", "Yeah, but, that doesn't mean he always gets it right away. Sometimes it takes a couple of shots to capture an entire moment in a single shot.", true);
+            SetText(speaker, text, bPlaySpeakingSounds);
         }
 
         public void ClearText()
         {
             m_SpeakersName.text = "";
-
             m_StoryText.text = "";
         }
 

@@ -12,15 +12,16 @@ actor Game Objects in the scene. This allows the Ink manager to discover those o
 ## Unity Setup
 
 1. Switch on the new Input System `Edit -> Project Settings -> Player -> Active Input Handling`
-2. Install Cinemachine and add at least one virtual camera `GameObject => Create -> Cinemahchine -> Virtual Camera`
-3. Install Text Mesh pro
-4. Add an `AudioSource` component to your main camera
-5. Install The [Ink Unity integration](https://github.com/inkle/ink-unity-integration).
+2. Install Text Mesh pro
+3. Add an `AudioSource` component to your main camera
+4. Install The [Ink Unity integration](https://github.com/inkle/ink-unity-integration).
+5. Add 'INK_PRESENT' to your script defines (`Edit -> Project Settings -> Player -> Scripting Defines Symbols`)
+5. [If you want to control the camera from Ink] Install Cinemachine and add at least one virtual camera `GameObject => Create -> Cinemahchine -> Virtual Camera`
 
-## Scene Setup
+## Scene Setup for Ink
 
-1. Add `Ink Canvas` prefab
-2. Add `Ink manager` component to a suitable manager object
+1. Add `Packages/Wizards Code - Character/Ink/Prefabs/Ink Canvas` prefab
+2. Add `Packages/Wizards Code - Character/Ink/Prefabs/Ink manager` component to a suitable manager object
 3. Drag your script JSON into the `Ink JSON` field\
 4. Drag your Cinemachine camera brain into the `Cinemachine` parameter
 5. Drag your camera (with audio source) into the `Music Audio Source` parameter
@@ -71,7 +72,7 @@ Places an actor under, or removes an actor from being under AI control. When an 
 That is, when AI control is ON directions in the script will take precedence over the AI Brain, but when AI control is off the AI brain can take actions.
 
 ```
->>> AI: [ON|OFF]
+>>> AI: ACTOR_NAME, [ON|OFF]
 ```
 
 ## AnimationParam
@@ -89,7 +90,7 @@ Set an animation parameter on an actor.
 Switch to a specific camera and optionally look at a named object.
 
 ```
->>> Camera: CAMERA_NAME OPTIONAL_TARGET_NAME
+>>> Camera: CAMERA_NAME[, LOOK_AT_TARGET_NAME]
 ```
 
 ## MoveTo 
@@ -131,10 +132,10 @@ Move the Actor named `Pat` to a location named `Mark1`, but allow the story to c
 
 ## TurnToFace
 
-The actor will turn to face the object identified.
+Turn to face, and continue to look at, a target or, if no target is provided, stop looking at a specific target.
 
 ```
->>> TurnToFace: ACTOR_NAME OBJECT_NAME
+>>> TurnToDace: ACTOR_NAME, [TARGET_NAME | Nothing]
 ```
 
 ## WaitFor

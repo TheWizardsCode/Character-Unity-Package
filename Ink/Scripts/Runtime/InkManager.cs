@@ -45,6 +45,7 @@ namespace WizardsCode.Ink
             AI
         }
 
+        #region Inspector Fields
         [Header("Script")]
         [SerializeField, Tooltip("The Ink file to work with.")]
         TextAsset m_InkJSON;
@@ -86,11 +87,14 @@ namespace WizardsCode.Ink
         TextBubbleController m_TextBubble;
         [SerializeField, Tooltip("When the Ink story calls for an actor to tall how longer, per character in the text, should they be kept in an active state. The actor will not carry out any other actions until this time has elepased. Set to 0 to not have the speaker wait.")]
         float m_ActiveTimePerCharacter = 0.01f;
+        [SerializeField, Tooltip("If there is only one option available in the story should it automatically be chosen? If set to false the story will wait for the player to select the choice.")]
+        bool m_autoAdvanceSingleChoice = true;
+        #endregion
 
-
+        #region Variables
         Story m_Story;
         bool isUIDirty = false;
-        StringBuilder m_NewStoryText = new StringBuilder();
+        StringBuilder m_NewTextToDisplay = new StringBuilder();
         
         List<WaitForState> waitForStates = new List<WaitForState>();
         bool wasWaiting = false;
@@ -98,7 +102,9 @@ namespace WizardsCode.Ink
         private bool m_IsDisplayingUI = false;
         private BaseActorController m_activeSpeaker;
         private bool isAIActive = true;
+        #endregion
 
+        #region Properties
         internal bool IsDisplayingUI
         {
             get { return m_IsDisplayingUI; }
@@ -107,7 +113,9 @@ namespace WizardsCode.Ink
                 isUIDirty = value;
             }
         }
+        #endregion
 
+        #region Monobehaviour Events
         private void Awake()
         {
             m_Story = new Story(m_InkJSON.text);
@@ -127,6 +135,7 @@ namespace WizardsCode.Ink
                 cinemachine = GameObject.FindObjectOfType<CinemachineBrain>();
             }
         }
+        #endregion
 
         /// <summary>
         /// Return a float value between 0 and 1 indicating how likely the party is to be noticed.
@@ -242,7 +251,7 @@ namespace WizardsCode.Ink
 
         public void Update()
         {
-            if (isWaiting) return;
+            if (isWaiting || !m_TextBubble.isFinished) return;
 
             if (IsDisplayingUI)
             {
@@ -262,31 +271,28 @@ namespace WizardsCode.Ink
             }
         }
 
-        private void EraseUI()
+        private void EraseChoices()
         {
             for (int i = 0; i < choicesPanel.transform.childCount; i++) {
                 Destroy(choicesPanel.transform.GetChild(i).gameObject);
             }
-
-            m_TextBubble.ClearText();
         }
 
         private void UpdateGUI()
         {
-            EraseUI();
+            EraseChoices();
 
-            string text = m_NewStoryText.ToString();
+            string text = m_NewTextToDisplay.ToString();
 
-            if (m_activeSpeaker)
+            if (string.IsNullOrEmpty(text))
             {
-                m_TextBubble.gameObject.SetActive(true);
-                m_TextBubble.SetText(m_activeSpeaker.name, text, true);
+                m_TextBubble.ShowWidget(false);
             } else
             {
-                m_TextBubble.gameObject.SetActive(false);
+                m_TextBubble.AddText(m_activeSpeaker, text, true);
             }
 
-            if (m_Story.currentChoices.Count > 1)
+            if (m_Story.currentChoices.Count >= 1)
             {
                 for (int i = 0; i < m_Story.currentChoices.Count; i++)
                 {
@@ -324,6 +330,7 @@ namespace WizardsCode.Ink
 
         void StopTalking()
         {
+            if (m_activeSpeaker == null) return;
             m_activeSpeaker.Prompt(m_stopTalkingCue);
             m_activeSpeaker.brain.active = isAIActive;
         }
@@ -335,7 +342,7 @@ namespace WizardsCode.Ink
         void ChooseStoryChoice(Choice choice)
         {
             m_Story.ChooseChoiceIndex(choice.index);
-            m_NewStoryText.Clear();
+            m_NewTextToDisplay.Clear();
             isUIDirty = true;
         }
 
@@ -706,6 +713,10 @@ namespace WizardsCode.Ink
             }
         }
 
+        /// <summary>
+        /// Turn to face, and continue to look at, a target or, if no target is provided, stop looking at a specific target.
+        /// </summary>
+        /// <param name="args">ACTOR_NAME, [TARGET_NAME | Nothing]</param>
         void TurnToFace(string[] args)
         {
             if (!ValidateArgumentCount(Direction.TurnToFace, args, 2))
@@ -716,7 +727,7 @@ namespace WizardsCode.Ink
             BaseActorController actor = FindActor(args[0].Trim());
             string targetName = args[1].Trim();
             Transform target = null;
-            if (targetName != "Nothing") {
+            if (targetName.ToLower() != "nothing") {
                 target = FindTarget(targetName);
             }
 
@@ -811,17 +822,19 @@ namespace WizardsCode.Ink
         /// </summary>
         void ProcessStoryChunk()
         {
-            // auto advance if there is only one choice and we are not waiting
             if (!m_Story.canContinue && !isWaiting)
             {
                 if (m_Story.currentChoices.Count == 1)
                 {
-                    m_Story.ChooseChoiceIndex(0);
+                    if (m_autoAdvanceSingleChoice)
+                    {
+                        m_Story.ChooseChoiceIndex(0);
+                    }
                 }
             }
 
             string line;
-            while (m_Story.canContinue && !isWaiting)
+            while (m_TextBubble.isFinished && m_Story.canContinue && !isWaiting)
             {
                 line = m_Story.Continue();
 
@@ -894,15 +907,16 @@ namespace WizardsCode.Ink
                     string speaker = line.Substring(0, indexOfColon).Trim();
                     string speech = line.Substring(indexOfColon + 1).Trim();
 
+                    m_NewTextToDisplay.Clear();
+
                     m_activeSpeaker = FindActor(speaker);
+                    
                     if (m_activeSpeaker)
                     {
                         TalkFor(m_activeSpeaker, speech.Length * m_ActiveTimePerCharacter);
                     }
-
-                    m_NewStoryText.Clear();
-                    
-                    m_NewStoryText.Append(speech);
+                                        
+                    m_NewTextToDisplay.Append(speech);
                     if (m_ActiveTimePerCharacter > 0)
                     {
                         WaitFor(new string[1] { $"{m_ActiveTimePerCharacter * speech.Length}" });
@@ -910,11 +924,12 @@ namespace WizardsCode.Ink
 
                     isUIDirty = true;
                 }
-                else // No named actore, so interpret it as narration or descriptive text
+                else // No named actor, so interpret it as narration or descriptive text
                 {
-                    m_NewStoryText.Clear();
+                    m_NewTextToDisplay.Clear();
+
                     m_activeSpeaker = null;
-                    m_NewStoryText.AppendLine(line);
+                    m_NewTextToDisplay.AppendLine(line);
                     if (m_ActiveTimePerCharacter > 0)
                     {
                         WaitFor(new string[1] { $"{m_ActiveTimePerCharacter * line.Length}" });

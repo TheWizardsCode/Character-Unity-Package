@@ -49,7 +49,7 @@ namespace WizardsCode.Character
         protected Animator m_Animator;
         #endregion
 
-        #region Public
+        #region Public Variables
         [HideInInspector]
         public Action onStationary;
         bool hasMoved = false;
@@ -63,6 +63,13 @@ namespace WizardsCode.Character
         protected NavMeshAgent m_Agent;
         private float lastStateChangeTime = float.NegativeInfinity;
         private States m_state;
+        #endregion
+
+        #region Properties
+        public string displayName
+        {
+            get { return name; }
+        }
 
         public Brain brain
         {
