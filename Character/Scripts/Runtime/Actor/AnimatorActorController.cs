@@ -75,8 +75,5 @@ namespace WizardsCode.Character
                 m_Animator.SetIKRotation(AvatarIKGoal.LeftFoot, m_LeftFootPosition.rotation);
             }
         }
-
-        
-
     }
 }

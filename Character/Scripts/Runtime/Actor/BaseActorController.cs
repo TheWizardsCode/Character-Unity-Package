@@ -469,7 +469,7 @@ namespace WizardsCode.Character
                 pos = head.position + transform.forward;
             } else
             {
-                new Vector3(0, 1.7f, 1);
+                pos = new Vector3(0, 1.7f, 1);
             }
             LookAtTarget.transform.position = pos;
             isRotating = false;
