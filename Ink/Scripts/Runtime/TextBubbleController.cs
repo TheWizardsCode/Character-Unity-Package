@@ -40,7 +40,7 @@ namespace WizardsCode.Ink
         AudioSource m_AudioSourcePunctuation;
 
         [SerializeField]
-        [FormerlySerializedAs("The delay between characters being printed.")]
+        [FormerlySerializedAs("RUNTIME ONLY: The delay between characters being printed. If set to 0 all characters will be printed at once. In the editor a value of 0 will always be used, regardless of the setting here.")]
         internal float m_SecondsBetweenPrintingChars = 0.01f;
 
         [SerializeField]
@@ -64,6 +64,7 @@ namespace WizardsCode.Ink
             private set;
         }
 
+        #region Lifecycle Events
         void Start()
         {
             isFinished = true;
@@ -71,7 +72,28 @@ namespace WizardsCode.Ink
             ClearText();
             ShowWidget(false);
             scrollRect = GetComponentInChildren<ScrollRect>();
+#if UNITY_EDITOR
+            m_SecondsBetweenPrintingChars = 0;
+#endif
         }
+
+        void OnEnable()
+        {
+            if (revealCo != null)
+            {
+                revealCo = StartCoroutine(RevealChars());
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (revealCo != null)
+            {
+                StopCoroutine(revealCo);
+            }
+        }
+        #endregion
+
         IEnumerator ShowOrHide()
         {
             RectTransform rectTransform = GetComponent<RectTransform>();
@@ -162,7 +184,7 @@ namespace WizardsCode.Ink
         /// </summary>
         /// <param name="speaker">The curent speaker. Set to null if this is descriptive text or an unnamed narrator.</param>
         /// <param name="text">The text to display. This will be displayed one character at a time based on the default delay between characters (set in the inspector, use `SetText(speaker, text, playSounds, delay)` to override.</param>
-        public void AddText(BaseActorController speaker, string text, bool bPlaySpeakingSounds)
+        public void AddText(BaseActorController speaker, string text)
         {
             ShowWidget(true);
             if (m_ActiveSpeaker != null && m_ActiveSpeaker != speaker)
@@ -174,8 +196,16 @@ namespace WizardsCode.Ink
 
             int displayedCharacters = m_StoryText.maxVisibleCharacters;
             text = m_StoryText.text + text;
-            SetText(speaker, text, bPlaySpeakingSounds);
-            m_StoryText.maxVisibleCharacters = displayedCharacters;
+            SetText(speaker, text);
+            if (m_SecondsBetweenPrintingChars > 0)
+            {
+                m_StoryText.maxVisibleCharacters = displayedCharacters;
+            }
+        }
+
+        public void SetText(BaseActorController speaker, string text)
+        {
+            SetText(speaker, text, m_PlaySpeakingSounds);
         }
 
         /// <summary>
@@ -183,9 +213,10 @@ namespace WizardsCode.Ink
         /// </summary>
         /// <param name="speaker">The curent speaker. Set to null if this is descriptive text or an unnamed narrator.</param>
         /// <param name="text">The text to display. This will be displayed one character at a time based on the default delay between characters (set in the inspector, use `SetText(speaker, text, playSounds, delay)` to override.</param>
-        /// <param name="bPlaySpeakingSounds"></param>
+        /// <param name="bPlaySpeakingSounds">Override the default setting (in the inspector) for playing speaking sounds.</param>
         public void SetText(BaseActorController speaker, string text, bool bPlaySpeakingSounds)
         {
+            m_PlaySpeakingSounds = bPlaySpeakingSounds;
             ShowWidget(true);
 
             m_ActiveSpeaker = speaker;
@@ -201,11 +232,20 @@ namespace WizardsCode.Ink
             }
 
             m_StoryText.text = text;
-            m_StoryText.maxVisibleCharacters = 0;
-
-            m_PlaySpeakingSounds = bPlaySpeakingSounds;
-
-            revealCo = StartCoroutine(RevealChars());
+            if (m_SecondsBetweenPrintingChars > 0)
+            {
+                m_StoryText.maxVisibleCharacters = 0;
+                revealCo = StartCoroutine(RevealChars());
+            }
+            else
+            {
+                m_StoryText.maxVisibleCharacters = m_StoryText.text.Length;
+                if (m_PlaySpeakingSounds)
+                {
+                    ProduceSpeechSound('a');
+                }
+                scrollRect.verticalNormalizedPosition = 0;
+            }
         }
 
         /** note: this invokes show widget automatically */
@@ -220,6 +260,11 @@ namespace WizardsCode.Ink
         {
             m_SpeakersName.text = "";
             m_StoryText.text = "";
+            if (revealCo != null)
+            {
+                StopCoroutine(revealCo);
+                revealCo = null;
+            }
         }
 
         /** if false and currently not hidden, it will call ClearText() automatically */
