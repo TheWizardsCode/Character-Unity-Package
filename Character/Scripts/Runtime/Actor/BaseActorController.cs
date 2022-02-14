@@ -229,6 +229,8 @@ namespace WizardsCode.Character
         /// </summary>
         public void StopMoving()
         {
+            if (!m_Agent) return;
+
             m_Agent.ResetPath();
         }
 
@@ -471,7 +473,7 @@ namespace WizardsCode.Character
             {
                 pos = new Vector3(0, 1.7f, 1);
             }
-            LookAtTarget.transform.position = pos;
+            LookAtTarget.transform.localPosition = pos;
             isRotating = false;
         }
 
@@ -505,6 +507,23 @@ namespace WizardsCode.Character
                     Gizmos.DrawLine(head.position, LookAtTarget.position);
                 }
             }
+        }
+
+        /// <summary>
+        /// Teleport the actor to a location. The actor will inherit the rotation and position of the location.
+        /// </summary>
+        /// <param name="location">The location to teleport to.</param>
+        /// <param name="aiActive">Should the AI brain, if the actor has one, be active after the teleport?</param>
+        public void Teleport(Transform location, bool aiActive)
+        {
+            transform.position = location.position;
+            transform.rotation = location.rotation;
+            if (brain)
+            {
+                brain.active = aiActive;
+            }
+            StopMoving();
+            ResetLookAt();
         }
     }
 }
