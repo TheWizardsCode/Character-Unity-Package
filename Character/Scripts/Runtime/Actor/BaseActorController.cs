@@ -468,12 +468,11 @@ namespace WizardsCode.Character
             Vector3 pos = Vector3.zero;
             if (head)
             {
-                pos = head.position + transform.forward;
+                LookAtTarget.transform.position = head.position + transform.forward;
             } else
             {
-                pos = new Vector3(0, 1.7f, 1);
+                LookAtTarget.transform.localPosition = new Vector3(0, 1.7f, 1);
             }
-            LookAtTarget.transform.localPosition = pos;
             isRotating = false;
         }
 
