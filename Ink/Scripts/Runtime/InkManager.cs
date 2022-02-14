@@ -14,6 +14,8 @@ using Cinemachine;
 using UnityEngine.Serialization;
 
 using System.Text.RegularExpressions;
+using System.IO;
+using System.Collections;
 
 namespace WizardsCode.Ink
 {
@@ -36,13 +38,11 @@ namespace WizardsCode.Ink
             StopMoving,
             AnimationParam,
             Camera,
-            //TODO, document this direction
             Music,
-            //TODO remove this as a preferred command, way too long, merge with "Music"?
-            SetPrimaryBlendedMusicTrack,
             WaitFor,
             Audio,
-            AI
+            AI,
+            Teleport
         }
 
         #region Inspector Fields
@@ -65,11 +65,10 @@ namespace WizardsCode.Ink
         [Header("Camera, Lights and Sound")]
         [SerializeField, Tooltip("The Cinemachine Brain used to control the virtual cameras.")]
         CinemachineBrain cinemachine;
+        [SerializeField, Tooltip("Camera to use as a fade to black/white or other when transitioning betweeen cameras. If not null then this camera will be inserted between all camera changes. The actuable fade properties will be set in the Cinemachine Brain.")]
+        CinemachineVirtualCamera m_FadeCamera;
         [SerializeField, Tooltip("The audio source for music playback.")]
         AudioSource m_MusicAudioSource;
-
-        [SerializeField, Tooltip("The audio source for music playback.")]
-        GlobalMusicController m_GlobalMusicComp;
 
         [Header("Actor Setup")]
         [SerializeField, Tooltip("The name of the player object.")]
@@ -82,6 +81,12 @@ namespace WizardsCode.Ink
         RectTransform choicesPanel;
         [SerializeField, Tooltip("Story choice button")]
         Button m_ChoiceButtonPrefab;
+        [SerializeField, Tooltip("X offset for the buttons position on screen.")]
+        float m_ButtonXOffset = 150;
+        [SerializeField, Tooltip("Y offset for the buttons position. Note that the actual offset will be the button number multiplied by this amount, meaning the buttons will be stacked on top of one another.")]
+        float m_ButtonYOffset = 100;
+        [SerializeField, Tooltip("The time it takes for a button to move from its start position to its target position when spawned in.")]
+        float m_ButtonAnimationTime = 0.6f;
         [SerializeField, Tooltip("Dialogue and narration bubble controller that will display the text for the player.")]
         [FormerlySerializedAs("m_TextBubbleComp")]
         TextBubbleController m_TextBubble;
@@ -89,8 +94,12 @@ namespace WizardsCode.Ink
         float m_ActiveTimePerCharacter = 0.01f;
         [SerializeField, Tooltip("If there is only one option available in the story should it automatically be chosen? If set to false the story will wait for the player to select the choice.")]
         bool m_autoAdvanceSingleChoice = true;
-        #endregion
 
+        [Header("Debug")]
+        [SerializeField, Tooltip("The starting path to use when running in the editor.")]
+        string m_StartingPath = "";
+        #endregion
+        
         #region Variables
         Story m_Story;
         bool isUIDirty = false;
@@ -115,7 +124,7 @@ namespace WizardsCode.Ink
         }
         #endregion
 
-        #region Monobehaviour Events
+        #region Lifecycle Events
         private void Awake()
         {
             m_Story = new Story(m_InkJSON.text);
@@ -134,6 +143,25 @@ namespace WizardsCode.Ink
                 Debug.LogWarning("Cinemachine brain is not set in the inspector. Auto discovering. You should set this in the inspectr.");
                 cinemachine = GameObject.FindObjectOfType<CinemachineBrain>();
             }
+
+            if (!string.IsNullOrEmpty(m_StartingPath))
+            {
+                m_Story.ChoosePathString(m_StartingPath);
+            }
+
+            BindExternalFunctions();
+        }
+
+        private void OnDestroy()
+        {
+            string path = Application.persistentDataPath + $"/StoryLog_{DateTime.Now.ToFileTime()}.log";
+            StreamWriter writer = new StreamWriter(path, true);
+            writer.WriteLine("Story Log");
+            writer.WriteLine("");
+            writer.WriteLine(m_StoryDebugLog.ToString());
+            writer.Close();
+
+            Debug.Log($"Story Log written to {path}");
         }
         #endregion
 
@@ -282,23 +310,27 @@ namespace WizardsCode.Ink
         {
             EraseChoices();
 
-            string text = m_NewTextToDisplay.ToString();
+            string text = m_NewTextToDisplay.ToString() + "\n";
 
             if (string.IsNullOrEmpty(text))
             {
                 m_TextBubble.ShowWidget(false);
             } else
             {
-                m_TextBubble.AddText(m_activeSpeaker, text, true);
+                m_TextBubble.AddText(m_activeSpeaker, text);
             }
 
             if (m_Story.currentChoices.Count >= 1)
             {
-                for (int i = 0; i < m_Story.currentChoices.Count; i++)
+                m_StoryDebugLog.AppendLine($"Available Choices:");
+                for (int i = m_Story.currentChoices.Count -1; i >= 0; i--)
                 {
+                    m_StoryDebugLog.AppendLine($"\tOption {i}:  {m_Story.currentChoices[i].text}");
+
                     choicesPanel.gameObject.SetActive(true);
                     Choice choice = m_Story.currentChoices[i];
                     Button choiceButton = Instantiate(m_ChoiceButtonPrefab) as Button;
+                    choiceButton.gameObject.transform.position = new Vector3(175, 900, 0);
                     choiceButton.gameObject.SetActive(true);
                     TextMeshProUGUI choiceText = choiceButton.GetComponentInChildren<TextMeshProUGUI>();
                     choiceText.text = m_Story.currentChoices[i].text;
@@ -306,12 +338,31 @@ namespace WizardsCode.Ink
 
                     choiceButton.onClick.AddListener(delegate
                     {
+                        m_StoryDebugLog.AppendLine($"Choice: {choice.text}");
                         ChooseStoryChoice(choice);
                     });
+
+                    Vector3 pos = new Vector3(m_ButtonXOffset, m_ButtonYOffset * (i + 1), 0);
+                    StartCoroutine(AnimateButtonPlacement(choiceButton.GetComponent<RectTransform>(), pos));
                 }
             }
 
             isUIDirty = false;
+        }
+
+        IEnumerator AnimateButtonPlacement(RectTransform rect, Vector3 targetPos)
+        {
+            yield return new WaitForEndOfFrame();
+
+            float time = 0;
+            Vector3 startPos = rect.anchoredPosition;
+
+            while (time < m_ButtonAnimationTime)
+            {
+                time += Time.deltaTime;
+                rect.anchoredPosition =  Vector3.Lerp(startPos, targetPos, time / m_ButtonAnimationTime);
+                yield return new WaitForEndOfFrame();
+            }
         }
 
         /// <summary>
@@ -497,6 +548,55 @@ namespace WizardsCode.Ink
         }
 
         /// <summary>
+        /// Teleport immediately transfers a character from wherever they are to a specified 
+        /// mark in the world. Their AI will be turned off under the assumption that they will
+        /// be part of the current scene. If they are to act as background AI in the scene 
+        /// then set the optional AI status parameter to "on".
+        ///
+        /// </summary>
+        /// <param name="args">ACTOR_NAME, MARK_NAME[, AI_ON_OR_OFF]/param>
+        void Teleport(string[] args)
+        {
+            if (!ValidateArgumentCount(Direction.Camera, args, 1, 2))
+            {
+                return;
+            }
+
+            BaseActorController actor = FindActor(args[0].Trim());
+            if (actor)
+            {
+                Transform mark = FindTarget(args[1].Trim());
+                if (mark)
+                {
+                    bool active = false;
+                    if (args.Length > 2) { 
+                        if (args[2].Trim().ToLower() == "on")
+                        {
+                            active = true;
+                        } else if (args[2].Trim().ToLower() == "off")
+                        {
+                            active = false;
+                        } else
+                        {
+                            Debug.LogError($"Recieved direction `Teleport: {string.Join(", ", args)}`, however, the AI state flag of `{args[2].Trim()}` is unrecognized (should be `on` or `off`). Proceeding with AI off.");
+                        }
+                    }
+
+                    actor.Teleport(mark, active);
+                    actor.Prompt(m_stopTalkingCue);
+                }
+                else
+                {
+                    Debug.LogError($"Recieved direction `Teleport: {string.Join(", ", args)}`, however, no mark with the name `{args[1].Trim()}` was found.");
+                }
+            }
+            else
+            {
+                Debug.LogError($"Recieved direction `Teleport: {string.Join(", ", args)}`, however, no actor with the name `{args[0].Trim()}` was found.");
+            }
+        }
+
+        /// <summary>
         /// Switch to a specific camera and optionally look at a named object.
         ///
         /// </summary>
@@ -514,8 +614,17 @@ namespace WizardsCode.Ink
             {
                 newCamera = camera.gameObject.GetComponent<CinemachineVirtualCamera>();
                 if (cinemachine.ActiveVirtualCamera != (ICinemachineCamera)newCamera) {
-                    cinemachine.ActiveVirtualCamera.Priority = 1;
-                    newCamera.Priority = 99;
+                    cinemachine.ActiveVirtualCamera.Priority = 10;
+
+
+                    if (m_FadeCamera)
+                    {
+                        StartCoroutine(CrossFadeCamerasCo(newCamera));
+                    }
+                    else
+                    {
+                        newCamera.Priority = 99;
+                    }
                 }
 
                 Transform objectName;
@@ -550,12 +659,31 @@ namespace WizardsCode.Ink
             }
         }
 
+        IEnumerator CrossFadeCamerasCo(CinemachineVirtualCamera newCamera)
+        {
+            m_FadeCamera.Priority = 99;
+            yield return new WaitForSeconds(0.2f);
+
+            while (cinemachine.IsBlending)
+            {
+                yield return new WaitForEndOfFrame();
+            }
+
+            m_FadeCamera.Priority = 10;
+            newCamera.Priority = 99;
+            yield return new WaitForSeconds(0.2f);
+            while (cinemachine.IsBlending)
+            {
+                yield return new WaitForEndOfFrame();
+            }
+        }
+
         /// <summary>
         /// Play a specified music track. The tracks requested should be saved in
-        /// `/Resources/Music/TEMPO_STYLE.mp3`
+        /// `Resources/Music/MOODE_NAME.mp3`
         /// 
         /// </summary>
-        /// <param name="args">[Tempo] [Style]</param>
+        /// <param name="args">[MOOD], [NAME]</param>
         void Music(string[] args)
         {
             if (!ValidateArgumentCount(Direction.Music, args, 2))
@@ -563,9 +691,9 @@ namespace WizardsCode.Ink
                 return;
             }
 
-            String path = "Music/";
+            String path = "Music";
             String track = args[0].Trim() + "_" + args[1].Trim();
-            AudioClip audio = Resources.Load<AudioClip>(path + track);
+            AudioClip audio = Resources.Load<AudioClip>($"{path}/{track}");
             if (audio)
             {
                 m_MusicAudioSource.clip = audio;
@@ -573,7 +701,7 @@ namespace WizardsCode.Ink
             }
             else
             {
-                Debug.LogError("There is a direction to play the music track " + track + " but no file of that name is found in `Resources/Audio`");
+                Debug.LogError($"There is a direction to play the music track '{path}/{track}.mp3' but no resource file of that name.");
             }
         }
 
@@ -642,48 +770,6 @@ namespace WizardsCode.Ink
             }
             source.clip = audio;
             source.Play();
-        }
-
-        /// <summary>
-        /// Play a specified music track, identified by name. The tracks
-        /// are blended reactively
-        ///
-        /// </summary>
-        /// <param name="args">[Tempo] [Style]</param>
-        [Obsolete("Use Music instead. Deprecated in 0.0.2")]
-        void SetPrimaryBlendedMusicTrack(string[] args)
-        {
-            if (!ValidateArgumentCount(Direction.Music, args, 1))
-            {
-                return;
-            }
-
-            if (m_GlobalMusicComp == null) return;
-
-            string trackAsString = args[0].Trim();
-            EMusicTrackName trackNameAsEnum;
-            // convert string to enum
-            switch (trackAsString)
-            {
-            case "Main":
-                trackNameAsEnum = EMusicTrackName.MTN_Main;
-                Debug.LogWarning("main track is always playing. Perhaps you meant another track?");
-                break;
-            case "Fun":
-                trackNameAsEnum = EMusicTrackName.MTN_Fun;
-                break;
-            case "Investigation":
-                trackNameAsEnum = EMusicTrackName.MTN_Investigation;
-                break;
-            case "Suspense":
-                trackNameAsEnum = EMusicTrackName.MTN_Suspense;
-                break;
-            default:
-                Debug.LogError("Direction to play music track cannot be satisfied: " + trackAsString);
-                return;
-            }
-
-            m_GlobalMusicComp.SetPrimaryTrack(trackNameAsEnum);
         }
 
         /// <summary>
@@ -791,7 +877,7 @@ namespace WizardsCode.Ink
 
             if (logError && actor == null)
             {
-                Debug.LogError($"Ink script contains a direction for actor called '{actorName}. However, the actor cannot be found.");
+                Debug.LogError($"Ink script contains a direction for actor called '{actorName}`. However, the actor cannot be found.");
             }
 
             return actor;
@@ -817,6 +903,9 @@ namespace WizardsCode.Ink
             return cue;
         }
 
+
+        StringBuilder m_StoryDebugLog = new StringBuilder();
+
         /// <summary>
         /// Grab the current story chunk and parse it for processing.
         /// </summary>
@@ -828,6 +917,7 @@ namespace WizardsCode.Ink
                 {
                     if (m_autoAdvanceSingleChoice)
                     {
+                        m_StoryDebugLog.AppendLine($"Auto Choice: {m_Story.currentChoices[0]}");
                         m_Story.ChooseChoiceIndex(0);
                     }
                 }
@@ -846,6 +936,8 @@ namespace WizardsCode.Ink
                     int endIdx = line.IndexOf(':') - startIdx;
                     Enum.TryParse(line.Substring(startIdx, endIdx).Trim(), out Direction cmd);
                     string[] args = line.Substring(endIdx + startIdx + 1).Split(',');
+
+                    m_StoryDebugLog.AppendLine($"Direction: {cmd}: {string.Join(", ", args)}");
 
                     switch (cmd)
                     {
@@ -883,9 +975,6 @@ namespace WizardsCode.Ink
                         case Direction.Music:
                             Music(args);
                             break;
-                        case Direction.SetPrimaryBlendedMusicTrack:
-                            SetPrimaryBlendedMusicTrack(args);
-                            break;
                         case Direction.WaitFor:
                             WaitFor(args);
                             break;
@@ -894,6 +983,9 @@ namespace WizardsCode.Ink
                             break;
                         case Direction.AI:
                             AI(args);
+                            break;
+                        case Direction.Teleport:
+                            Teleport(args);
                             break;
                         default:
                             Debug.LogError("Unknown Direction: " + line);
@@ -906,6 +998,8 @@ namespace WizardsCode.Ink
                     int indexOfColon = line.IndexOf(":");
                     string speaker = line.Substring(0, indexOfColon).Trim();
                     string speech = line.Substring(indexOfColon + 1).Trim();
+
+                    m_StoryDebugLog.AppendLine($"{speaker}: \"{speech}\"");
 
                     m_NewTextToDisplay.Clear();
 
@@ -926,6 +1020,8 @@ namespace WizardsCode.Ink
                 }
                 else // No named actor, so interpret it as narration or descriptive text
                 {
+                    m_StoryDebugLog.AppendLine($"Narration: {line}");
+
                     m_NewTextToDisplay.Clear();
 
                     m_activeSpeaker = null;
@@ -949,6 +1045,12 @@ namespace WizardsCode.Ink
             ValidateArgumentCount(Direction.AI, args, 2);
             
             BaseActorController actor = FindActor(args[0].Trim());
+            if (!actor.brain)
+            {
+                Debug.LogError($"There is directive to turn {actor}'s AI {args[1]}. However there no brain was found on that actor.");
+                return;
+            }
+
 
             if (args[1].Trim().ToLower() == "on")
             {
@@ -1065,9 +1167,19 @@ namespace WizardsCode.Ink
 
             return true;
         }
+
+        #region External Utility Functions
+        void BindExternalFunctions()
+        {
+            m_Story.BindExternalFunction("ConvertToSpaced", (string value) =>
+            {
+                return value.Replace('_', ' ');
+            });
+        }
+        #endregion
     }
 
-    class WaitForState
+class WaitForState
     {
         public enum WaitType { ReachTarget, Time }
         public BaseActorController actor;
@@ -1087,5 +1199,6 @@ namespace WizardsCode.Ink
             waitType = WaitType.ReachTarget;
         }
     }
+
 }
 #endif
