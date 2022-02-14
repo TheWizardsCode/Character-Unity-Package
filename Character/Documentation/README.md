@@ -26,8 +26,8 @@ This section will add a basic wander AI behaviour to your character. It's not a 
 1. Create a child of your brain called `Wander`
 2. Add the `Wander` or `Wander with Intent` component to this object. the difference is only in the way the character wanders. Wander is entirely random, wheras Wander with Intent will continue in roughly the same direction until they run out of space, then they will pick a new direction.
 3. The character will be moving around so lets add a Cinemachine camera to make it easier to follow them `GameObject -> Cinemachine -> Virtual Camera`
-4. Setup the free look camera to follow and look at your character.
-5. Hit play - your character should wander, although they will run everywhere
+4. Setup the `Follow VCam` to follow and look at your character. Set `Follow` to be the root transform of your character and `Look At` to something like the neck.
+5. Hit play - your character should wander, although they will run everywhere since we haven't set any animations for other motion types yet.
 
 ## Directing the Character
 
