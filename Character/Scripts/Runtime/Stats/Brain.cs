@@ -136,6 +136,8 @@ namespace WizardsCode.Stats {
                 go.transform.localPosition = new Vector3(0, 2, 0);
                 m_IconUI = go.AddComponent<SpriteRenderer>();
             }
+
+            active = true;
         }
 
         private void OnEnable()
