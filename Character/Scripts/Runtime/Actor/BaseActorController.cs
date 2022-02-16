@@ -517,6 +517,11 @@ namespace WizardsCode.Character
         {
             transform.position = location.position;
             transform.rotation = location.rotation;
+            if (m_Agent)
+            {
+                m_Agent.Warp(location.position);
+            }
+
             if (brain)
             {
                 brain.active = aiActive;
