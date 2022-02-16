@@ -128,18 +128,19 @@ namespace WizardsCode.Ink
         IEnumerator RevealChars()
         {
             isFinished = false;
+            float lastTime = Time.realtimeSinceStartup;
 
             while (m_StoryText.maxVisibleCharacters < m_StoryText.text.Length)
             {
-                m_StoryText.maxVisibleCharacters++;
+                m_StoryText.maxVisibleCharacters += Mathf.RoundToInt((Time.realtimeSinceStartup - lastTime) / m_SecondsBetweenPrintingChars);
                 if (m_PlaySpeakingSounds)
                 {
                     ProduceSpeechSound(m_StoryText.text.ToCharArray()[m_StoryText.maxVisibleCharacters - 1]);
                 }
 
-                yield return new WaitForEndOfFrame();
                 scrollRect.verticalNormalizedPosition = 0;
 
+                lastTime = Time.realtimeSinceStartup;
                 yield return new WaitForSeconds(m_SecondsBetweenPrintingChars);
             }
 
