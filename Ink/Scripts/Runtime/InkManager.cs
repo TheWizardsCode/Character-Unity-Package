@@ -290,7 +290,8 @@ namespace WizardsCode.Ink
                 }
                 if (isUIDirty)
                 {
-                    UpdateGUI();
+                    UpdateTextGUI();
+                    UpdateChoicesGUI();
                 }
             } else
             {
@@ -306,19 +307,26 @@ namespace WizardsCode.Ink
             }
         }
 
-        private void UpdateGUI()
+        private void UpdateTextGUI()
         {
-            EraseChoices();
+            string text = m_NewTextToDisplay.ToString();
 
-            string text = m_NewTextToDisplay.ToString() + "\n";
-
-            if (string.IsNullOrEmpty(text))
+            if (!string.IsNullOrEmpty(text))
             {
-                m_TextBubble.ShowWidget(false);
-            } else
-            {
+                if (!text.EndsWith("\n\n"))
+                {
+                    if (text.EndsWith("\n"))
+                    {
+                        text += "\n";
+                    }
+                }
                 m_TextBubble.AddText(m_activeSpeaker, text);
+                m_NewTextToDisplay.Clear();
             }
+        }
+
+        private void UpdateChoicesGUI() {
+            if (!m_TextBubble.isFinished) return;
 
             if (m_Story.currentChoices.Count >= 1)
             {
@@ -392,6 +400,7 @@ namespace WizardsCode.Ink
         /// <param name="choice">The choice made to progress the story.</param>
         void ChooseStoryChoice(Choice choice)
         {
+            EraseChoices();
             m_Story.ChooseChoiceIndex(choice.index);
             m_NewTextToDisplay.Clear();
             isUIDirty = true;
@@ -932,6 +941,8 @@ namespace WizardsCode.Ink
                 int cmdIdx = line.IndexOf(">>>");
                 if (cmdIdx >= 0)
                 {
+                    m_NewTextToDisplay.Clear();
+
                     int startIdx = line.IndexOf(' ', cmdIdx);
                     int endIdx = line.IndexOf(':') - startIdx;
                     Enum.TryParse(line.Substring(startIdx, endIdx).Trim(), out Direction cmd);

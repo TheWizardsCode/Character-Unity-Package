@@ -73,7 +73,7 @@ namespace WizardsCode.Ink
             ShowWidget(false);
             scrollRect = GetComponentInChildren<ScrollRect>();
 #if UNITY_EDITOR
-            m_SecondsBetweenPrintingChars = 0;
+            //m_SecondsBetweenPrintingChars = 0;
 #endif
         }
 
