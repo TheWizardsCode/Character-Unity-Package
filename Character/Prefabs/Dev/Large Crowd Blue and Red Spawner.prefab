@@ -43,11 +43,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 532aff806919ab44eaa441a2daaa8363, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SpawnedPrefabs:
-  - {fileID: 11400000, guid: 71f9aff0334ad9e468deb07692f48674, type: 2}
-  - {fileID: 11400000, guid: f04fdb1f8d76d464790d1d0aee98cdb4, type: 2}
-  - {fileID: 11400000, guid: c02469633128b1b4e9bcff3896610ed2, type: 2}
-  m_Number: 500
+  m_SpawnDefinition: {fileID: 11400000, guid: 51566e6362d47ff4097d26b0ef523c8c, type: 2}
+  m_NumberOfSpawns: 10
   m_Radius: 50
   onNavMesh: 1
   navMeshAreaMask: 1

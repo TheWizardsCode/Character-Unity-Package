@@ -42,7 +42,9 @@ namespace WizardsCode.Ink
             WaitFor,
             Audio,
             AI,
-            Teleport
+            Teleport,
+            Enable,
+            SoundFX
         }
 
         #region Inspector Fields
@@ -51,6 +53,8 @@ namespace WizardsCode.Ink
         TextAsset m_InkJSON;
         [SerializeField, Tooltip("The actors that are available in this scene.")]
         BaseActorController[] m_Actors;
+        [SerializeField, Tooltip("The cached objects that are available in this scene. Add any objects to this collection that you need to act upon in your ink script. This has two advantages, firstly it is a faster search (not search will fall back to the Find if cache hit is not detected). Secondly, it will work even if the object is inactive.")]
+        List<Transform> m_CachedObjects = new List<Transform>();
         [SerializeField, Tooltip("The cues that will be used in this scene.")]
         ActorCue[] m_Cues;
         [SerializeField, Tooltip("Should the story start as soon as the game starts. If this is set to false the story will not start until a trigger or similar is set.")]
@@ -69,6 +73,8 @@ namespace WizardsCode.Ink
         CinemachineVirtualCamera m_FadeCamera;
         [SerializeField, Tooltip("The audio source for music playback.")]
         AudioSource m_MusicAudioSource;
+        [SerializeField, Tooltip("The audio source for sound effects.")]
+        AudioSource m_FXAudioSource;
 
         [Header("Actor Setup")]
         [SerializeField, Tooltip("The name of the player object.")]
@@ -321,6 +327,7 @@ namespace WizardsCode.Ink
                     }
                 }
                 m_TextBubble.AddText(m_activeSpeaker, text);
+
                 m_NewTextToDisplay.Clear();
             }
         }
@@ -524,20 +531,40 @@ namespace WizardsCode.Ink
         /// Set an animation parameter on an actor.
         ///
         /// </summary>
-        /// <param name="args">[ActorName] [ParameterName] [Value] - if Value is missing it is assumed that the parameter is a trigger</param>
+        /// <param name="args">[ActorName], [ParameterName], [Value] - if Value is missing it is assumed that the parameter is a trigger</param>
         void AnimationParam(string[] args)
         {
+            Animator animator = null;
+
             if (!ValidateArgumentCount(Direction.AnimationParam, args, 2, 3))
             {
                 return;
             }
 
-            BaseActorController actor = FindActor(args[0].Trim());
+            BaseActorController actor = FindActor(args[0].Trim(), false);
+            if (actor)
+            {
+                animator = actor.Animator;
+            } else
+            {
+                Transform target = FindTarget(args[0].Trim());
+                if (target)
+                {
+                    //OPTIMIZATION: Cache GetComponent Results
+                    animator = target.GetComponent<Animator>();
+                }
+            }
+
+            if (!animator)
+            {
+                Debug.LogError($"Got direction to set an AnimationParm ('{string.Join(", ", args)}') but could not find an animator on an object with the name '{args[0].Trim()}'.");
+            }
+
             string paramName = args[1].Trim();
 
             if (args.Length == 2)
             {
-                actor.Animator.SetTrigger(paramName);
+                animator.SetTrigger(paramName);
                 return;
             }
 
@@ -545,15 +572,22 @@ namespace WizardsCode.Ink
 
             if (value == "False")
             {
-                actor.Animator.SetBool(paramName, false);
+                animator.SetBool(paramName, false);
                 return;
             } else if (value == "True")
             {
-                actor.Animator.SetBool(paramName, true);
+                animator.SetBool(paramName, true);
                 return;
             }
 
-            Debug.LogError("Direction to set an animator value that is a string, float or int. These are not supported right now.");
+            float floatValue;
+            if (float.TryParse(args[2].Trim(), out floatValue))
+            {
+                animator.SetFloat(paramName, floatValue);
+                return;
+            }
+
+            Debug.LogError("Direction to set an animator value that is not a boolean or a float. Other types are not supported right now.");
         }
 
         /// <summary>
@@ -602,6 +636,38 @@ namespace WizardsCode.Ink
             else
             {
                 Debug.LogError($"Recieved direction `Teleport: {string.Join(", ", args)}`, however, no actor with the name `{args[0].Trim()}` was found.");
+            }
+        }
+
+        /// <summary>
+        /// Enable or Disable an object
+        ///
+        /// </summary>
+        /// <param name="args">OBJECT_NAME, TRUE_OR_FALSE/param>
+        void Enable(string[] args)
+        {
+            if (!ValidateArgumentCount(Direction.Camera, args, 2))
+            {
+                return;
+            }
+            
+            Transform transform = FindTarget(args[0].Trim());
+            if (transform)
+            {
+                if (args[1].Trim().ToLower() == "true")
+                {
+                    transform.gameObject.SetActive(true);
+                } else if (args[1].Trim().ToLower() == "false")
+                {
+                    transform.gameObject.SetActive(false);
+                } else
+                {
+                    Debug.LogError($"Recieved direction `Enable: {string.Join(", ", args)}`, however, only `true` or `false` values are allowed. `{args[1].Trim()}` was supplied. If this object is disabled on start you need to ensure that it is referenced in the `Cached Objects` section of the Ink Manager so that it can be discovered.");
+                }
+            }
+            else
+            {
+                Debug.LogError($"Recieved direction `Enable: {string.Join(", ", args)}`, however, no object with the name `{args[0].Trim()}` was found.");
             }
         }
 
@@ -692,10 +758,10 @@ namespace WizardsCode.Ink
         /// `Resources/Music/MOODE_NAME.mp3`
         /// 
         /// </summary>
-        /// <param name="args">[MOOD], [NAME]</param>
+        /// <param name="args">MOOD, NAME[, LOOP_TRUE_OR_FALSE_DEFAULT_TRUE]</param>
         void Music(string[] args)
         {
-            if (!ValidateArgumentCount(Direction.Music, args, 2))
+            if (!ValidateArgumentCount(Direction.Music, args, 2, 3))
             {
                 return;
             }
@@ -705,12 +771,80 @@ namespace WizardsCode.Ink
             AudioClip audio = Resources.Load<AudioClip>($"{path}/{track}");
             if (audio)
             {
-                m_MusicAudioSource.clip = audio;
-                m_MusicAudioSource.Play();
+                bool isLooping = true;
+                if (args.Length == 3 && args[2].ToLower().Trim() == "false") {
+                    isLooping = false;
+                }
+
+                if (m_MusicAudioSource.clip != audio)
+                {
+                    m_MusicAudioSource.clip = audio;
+                    m_MusicAudioSource.loop = isLooping;
+                    m_MusicAudioSource.Play();
+                }
             }
             else
             {
-                Debug.LogError($"There is a direction to play the music track '{path}/{track}.mp3' but no resource file of that name.");
+                Debug.LogError($"There is a direction to play the music track '{path}/{track}' but no resource file of that name.");
+            }
+        }
+
+        /// <summary>
+        /// Play a specified sound effect. Effects requested should be saved in
+        /// `Resources/Audio/TYPE/NAME`
+        /// 
+        /// SOURCE: is the game object from which the sound will be played (must have an AudioSource)
+        /// TYPE: is an arbitrary FX type name
+        /// NAME: is thename of the actual clip file
+        /// LOOP: is 'true' if you want the sound to loop, this defaults to false. Any other value will be interpreted as false.
+        /// 
+        /// </summary>
+        /// <param name="args">SOURCE, TYPE, NAME[, LOOP_TRUE_OR_FALSE_DEFAULT_FALSE]</param>
+        void SoundFX(string[] args)
+        {
+            if (!ValidateArgumentCount(Direction.Music, args, 3, 4))
+            {
+                return;
+            }
+
+            AudioSource source;
+            Transform obj = FindTarget(args[0].Trim());
+            if (!obj)
+            {
+                Debug.LogError($"Direction to play SoundFX with the arguments {string.Join(", ", args)} but no source object with the name {args[0].Trim()} can be found");
+                return;
+            } else
+            {
+                //OPTIMIZATION: cache audio source
+                source = obj.GetComponentInChildren<AudioSource>();
+                if (!source)
+                {
+                    Debug.LogError($"Direction to play SoundFX with the arguments {string.Join(", ", args)} but no audio source was found on the the object with the name name {args[0].Trim()}.");
+                    return;
+                }
+            }
+
+            String path = "Audio";
+            String clip = args[1].Trim() + "/" + args[2].Trim();
+            AudioClip audio = Resources.Load<AudioClip>($"{path}/{clip}");
+            if (audio)
+            {
+                bool isLooping = false;
+                if (args.Length == 4 && args[3].ToLower().Trim() == "true")
+                {
+                    isLooping = true;
+                }
+
+                if (source.clip != audio)
+                {
+                    source.clip = audio;
+                    source.loop = isLooping;
+                    source.Play();
+                }
+            }
+            else
+            {
+                Debug.LogError($"There is a direction to play the soundFX '{path}/{clip}' but no resource file of that name.");
             }
         }
 
@@ -785,7 +919,7 @@ namespace WizardsCode.Ink
         /// Wait for a particular game state. Supported states are:
         ///
         /// ReachedTarget - waits for the actor to have reached their move target
-        /// Time - waits for a duration (in seconds)
+        /// [a float] - waits for a duration (in seconds)
         ///
         /// </summary>
         /// <param name="args">[Actor] [State]</param>
@@ -847,16 +981,26 @@ namespace WizardsCode.Ink
 
         Transform FindTarget(string objectName)
         {
+            Transform obj = null;
+            for (int i = 0; i < m_CachedObjects.Count; i++)
+            {
+                if (m_CachedObjects[i].name == objectName.Trim())
+                {
+                    return m_CachedObjects[i];
+                }
+            }
+
             BaseActorController actor = FindActor(objectName, false);
             if (actor != null)
             {
                 return actor.transform.root;
             }
 
-            //OPTIMIZATION Don't use Find at runtime. When initiating the InkManager we should pre-emptively parse all directions and cache the results - or perhaps (since the story may be larger or dynamic) we should do it in a CoRoutine just ahead of execution of the story chunk
+            //OPTIMIZATION Don't use Find at runtime. When initiating the InkManager we should pre-emptively parse all directions and cache the results in m_CachedObjects - or perhaps (since the story may be larger or dynamic) we should do it in a Coroutine just ahead of execution of the story chunk
             GameObject go = GameObject.Find(objectName);
             if (go)
             {
+                m_CachedObjects.Add(go.transform);
                 return go.transform;
             }
             else
@@ -986,6 +1130,9 @@ namespace WizardsCode.Ink
                         case Direction.Music:
                             Music(args);
                             break;
+                        case Direction.SoundFX:
+                            SoundFX(args);
+                            break;
                         case Direction.WaitFor:
                             WaitFor(args);
                             break;
@@ -997,6 +1144,9 @@ namespace WizardsCode.Ink
                             break;
                         case Direction.Teleport:
                             Teleport(args);
+                            break;
+                        case Direction.Enable:
+                            Enable(args);
                             break;
                         default:
                             Debug.LogError("Unknown Direction: " + line);

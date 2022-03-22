@@ -40,8 +40,11 @@ namespace WizardsCode.Character
             Vector3 s = m_Agent.transform.InverseTransformDirection(m_Agent.velocity).normalized;
             float turn = s.x;
 
-            m_Animator.SetFloat(m_SpeedParameterName, speedParam);
-            m_Animator.SetFloat(m_TurnParameterName, turn);
+            if (m_Animator)
+            {
+                m_Animator.SetFloat(m_SpeedParameterName, speedParam);
+                m_Animator.SetFloat(m_TurnParameterName, turn);
+            }
 
             if (speedParam > 0.01 || turn > 0.01)
             {
@@ -58,7 +61,7 @@ namespace WizardsCode.Character
 
         private void FeetIK()
         {
-            if (!isFootIKActive) return;
+            if (!m_Animator || !isFootIKActive) return;
 
             if (m_RightFootPosition != null)
             {

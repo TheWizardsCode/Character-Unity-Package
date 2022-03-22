@@ -45,7 +45,7 @@ namespace WizardsCode.Character
         float m_LookAtCoolTime = 0.2f;
 
         [Header("Animation")]
-        [SerializeField, Tooltip("The animation controller for updating animations.")]
+        [SerializeField, Tooltip("The animation controller for updating animations of the model representing this actor. If left empty no animations will be played.")]
         protected Animator m_Animator;
         #endregion
 
@@ -281,7 +281,13 @@ namespace WizardsCode.Character
                 m_Agent.stoppingDistance = ArrivingDistance / 2;
             }
             brain = GetComponentInChildren<Brain>();
-            MoveTargetPosition = transform.position;
+            if (m_Agent.isOnNavMesh)
+            {
+                MoveTargetPosition = transform.position;
+            } else
+            {
+                m_Agent.enabled = false;
+            }
 
             // Look IK Setup
             if (!head)
@@ -384,13 +390,16 @@ namespace WizardsCode.Character
                     }
                     break;
                 case States.Moving:
-                    if (!m_Agent.pathPending && m_Agent.remainingDistance <= ArrivingDistance)
+                    if (m_Agent != null)
                     {
-                        state = States.Arriving;
-                        if (onArriving != null)
+                        if (!m_Agent.pathPending && m_Agent.remainingDistance <= ArrivingDistance)
                         {
-                            onArriving();
-                            onArriving = null;
+                            state = States.Arriving;
+                            if (onArriving != null)
+                            {
+                                onArriving();
+                                onArriving = null;
+                            }
                         }
                     }
 
@@ -455,7 +464,7 @@ namespace WizardsCode.Character
             }
         }
 
-        public bool isIdle { 
+        public virtual bool isIdle { 
             get { return state == States.Idle; }
         }
 

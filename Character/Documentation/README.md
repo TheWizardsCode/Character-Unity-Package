@@ -5,13 +5,14 @@ The Wizards Code character system provides an ambient AI system for your game ch
 # Basic Setup
 
 1. Add `Animator Actor Controller`
-2. Drag the `Packages/Wizards Code - Character/Prefabs/AI/Brain` prefab onto the character root
-3. Create an `Animator Override Controller` that overrides `Animations/Controllers/Humanoid Controller (Override This)` and assign it to your models animator.
-4. Add a `Rigidbody`
-5. Add an appropriate `Capsule Collider` to cover the characters body
-6. Add an `Audio Source`
-7. Bake the `NavMesh` in your scene
-8. Hit play - your character should idle
+2. Set the `Head` and `Animator` values in `Animator Actor Controller`
+3. Drag the `Packages/Wizards Code - Character/Prefabs/AI/Brain` prefab onto the character root
+4. Create an `Animator Override Controller` that overrides `Animations/Controllers/Humanoid Controller (Override This)` and assign it to your models animator.
+5. [OPTIONAL] Add a `Rigidbody`
+6. Add an appropriate `Capsule Collider` to cover the characters body
+7. Add an `Audio Source`
+8. Bake the `NavMesh` in your scene
+9. Hit play - your character should idle
 
 For more information see the demo scene in `Characters/Scenes/Behvaiours/101 Minimal Character` and [Documentation](Behaviours/101 Minimal Character.md).
 

@@ -46,6 +46,9 @@ namespace WizardsCode.Ink
         [SerializeField]
         [FormerlySerializedAs("_GrowShrinkSpeed")]
         float m_GrowOrShrinkSpeed = 4.0f;
+
+        [SerializeField, Tooltip("Should the story text in the UI be cleared every time we add new text? Set to true if your UI does not handle scrolling well.")]
+        bool m_ClearOnNewText = false;
         #endregion
 
 
@@ -132,6 +135,12 @@ namespace WizardsCode.Ink
 
             while (m_StoryText.maxVisibleCharacters < m_StoryText.text.Length)
             {
+                if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.Mouse1))
+                {
+                    m_StoryText.maxVisibleCharacters = m_StoryText.text.Length;
+                    break;
+                }
+
                 m_StoryText.maxVisibleCharacters += Mathf.RoundToInt((Time.realtimeSinceStartup - lastTime) / m_SecondsBetweenPrintingChars);
                 if (m_PlaySpeakingSounds)
                 {
@@ -188,16 +197,26 @@ namespace WizardsCode.Ink
         public void AddText(BaseActorController speaker, string text)
         {
             ShowWidget(true);
+            
             if (m_ActiveSpeaker != null && m_ActiveSpeaker != speaker)
             {
-                ClearText();
-                m_StoryText.maxVisibleCharacters = 0;
+                if (m_ClearOnNewText)
+                {
+                    ClearText();
+                    m_StoryText.maxVisibleCharacters = 0;
+                }
             }
             m_ActiveSpeaker = speaker;
 
             int displayedCharacters = m_StoryText.maxVisibleCharacters;
-            text = m_StoryText.text + text;
-            SetText(speaker, text);
+            if (m_ActiveSpeaker)
+            {
+                SetText(speaker, $"{m_StoryText.text}\n\n{speaker.displayName}: {text}");
+            } else
+            {
+                SetText(speaker, $"{m_StoryText.text}\n\n{text}");
+            }
+
             if (m_SecondsBetweenPrintingChars > 0)
             {
                 m_StoryText.maxVisibleCharacters = displayedCharacters;

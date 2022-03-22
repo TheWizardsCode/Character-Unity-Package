@@ -22,6 +22,7 @@ namespace WizardsCode.Character
         [SerializeField, Tooltip("The Animator boolean parameter name that will cause the character to crouch when moving/idle.")]
         string m_CrouchParameterName = "Crouch";
 
+        [HideInInspector]
         public List<EmotionMetric> emotions = new List<EmotionMetric>();
 
         Animator m_Animator;
