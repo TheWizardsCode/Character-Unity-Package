@@ -3,6 +3,10 @@ Various scripts and utilities for controlling characters in Unity. The project i
 
 This is open source, if it doesn't do what you need raise and issue to see if it's something we will add. It's much more likely to be added if you provide the code - but don't worry about simply making suggestions. Bug reports are especially valuable. Use the [issue tracker](https://github.com/TheWizardsCode/Character/issues) please.
 
+# Documentation
+
+We try to make the project self documenting. Load up any of the demo scenes and they should present a documentation file on run. You can find the source for these files in `Character/Documentation` along with some suplementary materials.
+
 # Installation
 
 You can either install as a package or from source. We recommend installing from source since this is open source code and we'd love you to contribute fixes, documentations, demo scenes and more. Below are instructions on how to install.
