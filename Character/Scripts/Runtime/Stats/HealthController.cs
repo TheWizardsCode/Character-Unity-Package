@@ -21,20 +21,26 @@ namespace WizardsCode.Character.Stats
         [SerializeField, Tooltip("The animator to use.")]
         Animator m_Animator;
         [SerializeField, Tooltip("A trigger parameter used to start the death animation.")]
-        string deathTriggerName = "Die";
+        string m_DeathTriggerName = "Die";
 
-        StatSO health;
-        Brain controller;
+        protected StatSO m_Health;
+        Brain m_Controller;
         int deathTriggerID;
+
+        public bool IsAlive {  get { return m_Health.Value > 0; } }
+        public float Health { 
+            get { return m_Health.Value; } 
+            set { m_Health.Value = value; }
+        }
 
         private void Start()
         {
-            controller = GetComponent<Brain>();
+            m_Controller = GetComponentInChildren<Brain>();
 
-            health = controller.GetOrCreateStat(healthTemplate, 1);
-            health.onValueChanged.AddListener(OnHealthChanged);
+            m_Health = m_Controller.GetOrCreateStat(healthTemplate, 1);
+            m_Health.onValueChanged.AddListener(OnHealthChanged);
 
-            deathTriggerID = Animator.StringToHash(deathTriggerName);
+            deathTriggerID = Animator.StringToHash(m_DeathTriggerName);
         }
 
         /// <summary>
@@ -43,7 +49,7 @@ namespace WizardsCode.Character.Stats
         /// <param name="value">The normalized value to use. That is a value between 0 and 1, where 1 is equivalent to the max possible value and 0 is the equivalent of the minimal possible value.</param>
         public void SetHitPointsNormalized(float value)
         {
-            health.NormalizedValue = value;
+            m_Health.NormalizedValue = value;
         }
 
         /// <summary>
@@ -53,16 +59,25 @@ namespace WizardsCode.Character.Stats
         /// <param name="value">The value to set hit points to.</param>
         public void SetHitPoints(float value)
         {
-            health.Value = value;
+            m_Health.Value = value;
         }
 
-        private void OnHealthChanged(float normalizedDelta)
+        /// <summary>
+        /// Damage the AI by a damage amount. The minimum value will be clamped according to the settings in the halth component.
+        /// </summary>
+        /// <param name="amount">The damage to be applied.</param>
+        public void TakeDamage(float amount)
         {
-            if (m_Animator != null && health.NormalizedValue == 0)
+            m_Health.Value -= amount;
+        }
+
+        protected virtual void OnHealthChanged(float normalizedDelta)
+        {
+            if (m_Animator != null && m_Health.NormalizedValue == 0)
             {
                 m_Animator.SetTrigger(deathTriggerID);
 
-                Brain brain = GetComponent<Brain>();
+                Brain brain = GetComponentInChildren<Brain>();
                 if (brain)
                 {
                     brain.enabled = false;
