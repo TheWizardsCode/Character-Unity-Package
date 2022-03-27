@@ -180,13 +180,13 @@ namespace WizardsCode.Stats {
             {
                 if (!Actor.isIdle) return false;
 
-                if ((ActiveBlockingBehaviour == null || ActiveBlockingBehaviour.CurrentState == AbstractAIBehaviour.State.Inactive)
+                if (ActiveBlockingBehaviour == null
                     && Time.timeSinceLevelLoad > m_TimeOfNextBehaviourUpdate)
                 {
                     return true;
                 } 
                 
-                if (ActiveBlockingBehaviour != null && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.Inactive && !ActiveBlockingBehaviour.IsInteruptable)
+                if (ActiveBlockingBehaviour != null && !ActiveBlockingBehaviour.IsInteruptable)
                 {
                     return false;
                 }
@@ -197,6 +197,8 @@ namespace WizardsCode.Stats {
 
         internal override void Update()
         {
+            base.Update();
+
             if (!active) return;
 
             if (!isReadyToUpdateBehaviour) return;
@@ -212,8 +214,6 @@ namespace WizardsCode.Stats {
                     TargetInteractable.StartCharacterInteraction(this);
                 }
             }
-
-            base.Update();
 
             UpdateActiveBehaviour();
 

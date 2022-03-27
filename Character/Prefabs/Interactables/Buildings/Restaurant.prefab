@@ -141,7 +141,7 @@ MonoBehaviour:
   - statTemplate: {fileID: 11400000, guid: cf9e8ec2f416536438ba755bec4df9d6, type: 2}
     maxChange: -1
     applyOnCompletion: 0
-  m_ActorPerformCue: {fileID: 11400000, guid: 461ce6ee321b4064e99a08f9c8c16d65, type: 2}
+  m_ActorPerformCue: {fileID: 11400000, guid: cc6bd807b8c19ee47b09cdeffbc86cf4, type: 2}
   m_Cooldown: 60
 --- !u!114 &4532472690883666434
 MonoBehaviour:

@@ -228,6 +228,7 @@ namespace WizardsCode.Character
             }
             return isValid;
         }
+
         private void OnTriggerEnter(Collider other)
         {
             if (other.gameObject == this.gameObject) return;
