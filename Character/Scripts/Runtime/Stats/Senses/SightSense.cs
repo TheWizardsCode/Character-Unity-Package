@@ -12,7 +12,7 @@ namespace WizardsCode.Character.AI
 
         internal override void OnUpdate()
         {
-            //TODO OPTIMIZATION don't just find the closest, check the actor can actually see the actor (should probably be done in a `bool isSensed()` that checks they are seen when first detected rather than iterate over them a second time here.
+            //OPTIMIZATION don't just find the closest, check the actor can actually see the actor (should probably be done in a `bool isSensed()` that checks they are seen when first detected rather than iterate over them a second time here.
             m_closestSensedObject = null;
             float minSqrMag = float.PositiveInfinity;
             float currentSqrMag;

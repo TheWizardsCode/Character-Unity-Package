@@ -46,12 +46,6 @@ namespace WizardsCode.Character
             base.Init();
 
             m_StartPosition = transform.position;
-            NavMeshHit hit;
-            if (!NavMesh.SamplePosition(transform.position, out hit, transform.lossyScale.y * 2, navMeshAreaMask))
-            {
-                Debug.LogError(Brain.DisplayName + " start position is not on a navmesh.");
-            }
-
             timeToNextWanderPathChange = float.MinValue;
         }
 
@@ -72,9 +66,9 @@ namespace WizardsCode.Character
             }
         }
 
-        internal override void StartBehaviour(float duration)
+        internal override void StartBehaviour()
         {
-            base.StartBehaviour(duration);
+            base.StartBehaviour();
 
             Brain.Actor.Prompt(m_OnStart);
             Brain.Actor.Prompt(m_OnPrepare);

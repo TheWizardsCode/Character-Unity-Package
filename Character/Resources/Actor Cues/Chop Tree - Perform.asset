@@ -19,7 +19,7 @@ MonoBehaviour:
   audioClip: {fileID: 0}
   m_LayerName: 
   m_LayerWeight: 0
-  m_LayerChangeSpeed: 0
+  m_LayerWeightChangeTime: 0.5
   m_AnimationParams:
   - paramName: ChopTree
     paramType: 2

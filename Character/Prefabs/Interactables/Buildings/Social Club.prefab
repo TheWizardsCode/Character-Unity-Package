@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 7956340786451236146}
   - component: {fileID: 7956340786451236149}
   - component: {fileID: 494245768}
-  - component: {fileID: 494245769}
   m_Layer: 0
   m_Name: Social Club
   m_TagString: Untagged
@@ -111,7 +110,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Description: 
   m_Type: {fileID: 11400000, guid: 17cc9c6099700554d8f1a36d333dd9d7, type: 2}
-  m_InteractionNameFromActorsPerspective: Socialize with food
+  m_InteractionNameFromActorsPerspective: Socialize - Eating
   m_MaxInteractors: 20
   m_CharacterInfluences:
   - statTemplate: {fileID: 11400000, guid: be586581a85615540afb94067ec131a2, type: 2}
@@ -123,13 +122,13 @@ MonoBehaviour:
   - statTemplate: {fileID: 11400000, guid: 4efea187304c1a04581b1f0b8cc341cf, type: 2}
     maxChange: -20
     applyOnCompletion: 0
-  m_IsRepeating: 0
+  m_InteractionPoint: {fileID: 0}
   m_DestroyOnUse: 0
   m_ObjectInfluences:
   - statTemplate: {fileID: 11400000, guid: cf9e8ec2f416536438ba755bec4df9d6, type: 2}
     maxChange: -7
     applyOnCompletion: 0
-  m_Duration: 20
+  m_ActorCue: {fileID: 11400000, guid: 461ce6ee321b4064e99a08f9c8c16d65, type: 2}
   m_Cooldown: 100
 --- !u!114 &494245768
 MonoBehaviour:
@@ -143,24 +142,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e5278de6e568c64cb6cddd4d1c2177d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_DisplayName: 
   m_DesiredStates:
   - {fileID: 11400000, guid: 584989cd936bbf14fadd24b5907ac279, type: 2}
   m_TimeBetweenUpdates: 0.5
   m_Stats: []
   m_StatsInfluencers: []
---- !u!114 &494245769
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7956340786451236150}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d83f3ce966261b4888d7b2737f98b11, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &8127858355931999284
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -172,6 +158,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Building Foundation
+      objectReference: {fileID: 0}
+    - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
         type: 3}
@@ -190,6 +181,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
@@ -201,16 +197,6 @@ PrefabInstance:
     - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
-        type: 3}
-      propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,

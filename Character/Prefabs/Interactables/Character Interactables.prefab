@@ -51,8 +51,9 @@ MonoBehaviour:
   - statTemplate: {fileID: 11400000, guid: e7d5ac7f90040d04b892ec7dda97749d, type: 2}
     maxChange: 10
     applyOnCompletion: 0
-  m_IsRepeating: 0
+  m_InteractionPoint: {fileID: 0}
   m_DestroyOnUse: 0
   m_ObjectInfluences: []
   m_Duration: 10
+  m_ActorCue: {fileID: 11400000, guid: 101be20c4891bc34b9f5a2e9c135f9f5, type: 2}
   m_Cooldown: 120

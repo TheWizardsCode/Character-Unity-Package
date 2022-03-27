@@ -42,8 +42,9 @@ namespace WizardsCode.Character
         bool m_DestroyOnUse = false;
         [SerializeField, Tooltip("The set of object stats and the influence to apply to them when a character interacts with the object.")]
         internal StatInfluence[] m_ObjectInfluences;
-        [SerializeField, Tooltip("The time, in seconds, over which the influencer will be effective. The total change will occure over this time period. If duration is 0 then the total change is applied instantly")]
-        float m_Duration = 3;
+        [SerializeField, Tooltip("The Actor cue to perform when a characrter is interacting with this object.")]
+        [FormerlySerializedAs("m_ActorCue")] // 3/26
+        internal ActorCue m_ActorPerformCue;
         [SerializeField, Tooltip("The cooldown time before a character can be influenced by this influencer again.")]
         float m_Cooldown = 30;
 
@@ -108,16 +109,6 @@ namespace WizardsCode.Character
         public StatInfluence[] ObjectInfluences
         {
             get { return m_ObjectInfluences; }
-        }
-
-        /// <summary>
-        /// The time it takes, under normal circumstances, to interact with this thing.
-        /// </summary>
-        public float Duration {
-            get
-            {
-                return m_Duration;
-            }
         }
 
         public InteractableTypeSO Type 
@@ -251,10 +242,9 @@ namespace WizardsCode.Character
             }
 
             StartCharacterInteraction(stats);
-            AddObjectInfluence();
         }
 
-        private void StartCharacterInteraction(StatsTracker stats)
+        internal void StartCharacterInteraction(StatsTracker stats)
         {
             if (stats is Brain)
             {
@@ -270,7 +260,6 @@ namespace WizardsCode.Character
                 influencer.Trigger = this;
                 influencer.stat = CharacterInfluences[i].statTemplate;
                 influencer.maxChange = CharacterInfluences[i].maxChange;
-                influencer.duration = m_Duration;
                 influencer.CooldownDuration = m_Cooldown;
 
                 if (stats.TryAddInfluencer(influencer))
@@ -281,6 +270,8 @@ namespace WizardsCode.Character
                     m_TimeOfLastInfluence.Add(stats, Time.timeSinceLevelLoad);
                 }
             }
+
+            AddObjectInfluence();
         }
 
         internal void StopCharacterInteraction(StatsTracker statsTracker)
@@ -305,7 +296,6 @@ namespace WizardsCode.Character
                 influencer.Trigger = this;
                 influencer.stat = ObjectInfluences[i].statTemplate;
                 influencer.maxChange = ObjectInfluences[i].maxChange;
-                influencer.duration = m_Duration;
                 influencer.CooldownDuration = m_Cooldown;
 
                 m_StatsTracker.TryAddInfluencer(influencer);

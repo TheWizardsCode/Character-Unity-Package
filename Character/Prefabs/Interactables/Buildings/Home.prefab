@@ -115,10 +115,11 @@ MonoBehaviour:
   - statTemplate: {fileID: 11400000, guid: 1134128b230d7734dad1c54314c6d317, type: 2}
     maxChange: 70
     applyOnCompletion: 0
-  m_IsRepeating: 0
+  m_InteractionPoint: {fileID: 0}
   m_DestroyOnUse: 0
   m_ObjectInfluences: []
   m_Duration: 60
+  m_ActorCue: {fileID: 11400000, guid: 597f52c5c98c1344cacae02fd15b1cff, type: 2}
   m_Cooldown: 30
 --- !u!1001 &568524562741506113
 PrefabInstance:
@@ -131,6 +132,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Building Foundation
+      objectReference: {fileID: 0}
+    - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
         type: 3}
@@ -149,6 +155,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
@@ -160,16 +171,6 @@ PrefabInstance:
     - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,
-        type: 3}
-      propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3196663329818294797, guid: 289354ca2fadb154e95dcd3e13e8fffa,

@@ -34,6 +34,7 @@ namespace WizardsCode.Character
         float animationNormalizedTime = 0;
 
         private int m_LayerIndex;
+        private float m_OriginalLayerWeight;
 
         public float layerWeightChangeTime
         {
@@ -45,7 +46,26 @@ namespace WizardsCode.Character
             if (m_Actor.Animator != null)
             {
                 m_LayerIndex = m_Actor.Animator.GetLayerIndex(m_LayerName);
+                m_OriginalLayerWeight = m_Actor.Animator.GetLayerWeight(m_LayerIndex);
             }
+        }
+
+        private IEnumerator RevertAnimationLayerWeights()
+        {
+            if (m_Actor.Animator != null && m_LayerIndex >= 0 && m_Actor.Animator.GetLayerWeight(m_LayerIndex) != m_OriginalLayerWeight)
+            {
+                float originalWeight = m_Actor.Animator.GetLayerWeight(m_LayerIndex);
+                float time = 0;
+                while (!Mathf.Approximately(m_Actor.Animator.GetLayerWeight(m_LayerIndex), m_LayerWeight))
+                {
+                    time += Time.deltaTime;
+                    m_Actor.Animator.SetLayerWeight(m_LayerIndex,
+                        Mathf.Lerp(originalWeight, m_LayerWeight, time / m_LayerWeightChangeTime));
+                    yield return new WaitForEndOfFrame();
+                }
+            }
+
+            yield return null;
         }
 
         public override IEnumerator Prompt(BaseActorController actor)
@@ -55,7 +75,14 @@ namespace WizardsCode.Character
             ProcessAnimationLayerWeights();
             ProcessAnimationParameters();
 
-            return base.Prompt(actor);
+            yield return base.Prompt(actor);
+        }
+
+        public override IEnumerator Revert(BaseActorController actor)
+        {
+            yield return RevertAnimationLayerWeights();
+            RevertAnimationParameters();
+            yield return base.Revert(actor);
         }
 
         protected override IEnumerator UpdateCoroutine()
@@ -81,6 +108,7 @@ namespace WizardsCode.Character
 
             yield return base.UpdateCoroutine();
         }
+
         /// <summary>
         /// If this cue has any animation parameter changes then have an actor make those changes.
         /// </summary>
@@ -97,13 +125,42 @@ namespace WizardsCode.Character
                             m_Actor.Animator.SetTrigger(m_AnimationParams[i].paramName);
                             break;
                         case ParameterType.Bool:
+                            m_AnimationParams[i].originalBoolValue = m_Actor.Animator.GetBool(m_AnimationParams[i].paramName);
                             m_Actor.Animator.SetBool(m_AnimationParams[i].paramName, m_AnimationParams[i].paramBoolValue);
                             break;
                         case ParameterType.Int:
+                            m_AnimationParams[i].originalIntValue = m_Actor.Animator.GetInteger(m_AnimationParams[i].paramName);
                             m_Actor.Animator.SetInteger(m_AnimationParams[i].paramName, m_AnimationParams[i].paramIntValue);
                             break;
                         case ParameterType.Float:
-                            m_Actor.Animator.SetBool(m_AnimationParams[i].paramName, m_AnimationParams[i].paramBoolValue);
+                            m_AnimationParams[i].originalFloatValue = m_Actor.Animator.GetFloat(m_AnimationParams[i].paramName);
+                            m_Actor.Animator.SetFloat(m_AnimationParams[i].paramName, m_AnimationParams[i].paramFloatValue);
+                            break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// If this cue has any animation parameter changes then have an actor revert those changes.
+        /// </summary>
+        /// <param name="m_Actor">The actor to enact the animation changes.</param>
+        private void RevertAnimationParameters()
+        {
+            for (int i = 0; i < m_AnimationParams.Length; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(m_AnimationParams[i].paramName))
+                {
+                    switch (m_AnimationParams[i].paramType)
+                    {
+                        case ParameterType.Bool:
+                            m_Actor.Animator.SetBool(m_AnimationParams[i].paramName, m_AnimationParams[i].originalBoolValue);
+                            break;
+                        case ParameterType.Int:
+                            m_Actor.Animator.SetInteger(m_AnimationParams[i].paramName, m_AnimationParams[i].originalIntValue);
+                            break;
+                        case ParameterType.Float:
+                            m_Actor.Animator.SetFloat(m_AnimationParams[i].paramName, m_AnimationParams[i].originalFloatValue);
                             break;
                     }
                 }
@@ -124,5 +181,9 @@ namespace WizardsCode.Character
         public int paramIntValue;
         [SerializeField, Tooltip("The bool value of the parameter, value is ignored if parameter is not a bool")]
         public bool paramBoolValue;
+
+        internal float originalFloatValue;
+        internal int originalIntValue;
+        internal bool originalBoolValue;
     }
 }

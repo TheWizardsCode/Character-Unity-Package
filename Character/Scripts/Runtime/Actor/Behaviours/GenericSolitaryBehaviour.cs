@@ -28,15 +28,22 @@ namespace WizardsCode.Character
             }
         }
 
-        internal override void StartBehaviour(float duration)
+        internal override void StartBehaviour()
         {
             m_EndCooldownTime = Time.timeSinceLevelLoad + m_CooldownDuration;
-            base.StartBehaviour(duration);
+            base.StartBehaviour();
 
-            Brain.Actor.Prompt(m_OnStart);
-            Brain.Actor.Prompt(m_OnPrepare);
+            if (m_OnStart != null)
+            {
+                Brain.Actor.Prompt(m_OnStart);
+                EndTime = Time.timeSinceLevelLoad + m_OnStart.Duration;
+            }
 
-            PerformAction();
+            if (m_OnPrepare)
+            {
+                Brain.Actor.Prompt(m_OnPrepare);
+                EndTime = Time.timeSinceLevelLoad + m_OnPrepare.Duration;
+            }
         }
     }
 }

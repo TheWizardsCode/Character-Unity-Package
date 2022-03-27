@@ -180,12 +180,13 @@ namespace WizardsCode.Stats {
             {
                 if (!Actor.isIdle) return false;
 
-                if (ActiveBlockingBehaviour == null && Time.timeSinceLevelLoad > m_TimeOfNextBehaviourUpdate)
+                if ((ActiveBlockingBehaviour == null || ActiveBlockingBehaviour.CurrentState == AbstractAIBehaviour.State.Inactive)
+                    && Time.timeSinceLevelLoad > m_TimeOfNextBehaviourUpdate)
                 {
                     return true;
                 } 
                 
-                if (ActiveBlockingBehaviour != null && ActiveBlockingBehaviour.IsExecuting && !ActiveBlockingBehaviour.IsInteruptable)
+                if (ActiveBlockingBehaviour != null && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.Inactive && !ActiveBlockingBehaviour.IsInteruptable)
                 {
                     return false;
                 }
@@ -200,9 +201,16 @@ namespace WizardsCode.Stats {
 
             if (!isReadyToUpdateBehaviour) return;
 
-            if (TargetInteractable != null && Vector3.SqrMagnitude(TargetInteractable.transform.position - Actor.MoveTargetPosition) > 0.7f)
+            if (TargetInteractable != null && ActiveBlockingBehaviour != null)
             {
-                Actor.MoveTargetPosition = TargetInteractable.transform.position;
+                if (Vector3.SqrMagnitude(TargetInteractable.transform.position - Actor.MoveTargetPosition) > 0.7f)
+                {
+                    Actor.MoveTargetPosition = TargetInteractable.transform.position;
+                }
+                else
+                {
+                    TargetInteractable.StartCharacterInteraction(this);
+                }
             }
 
             base.Update();
@@ -232,10 +240,13 @@ namespace WizardsCode.Stats {
         /// </summary>
         private void UpdateActiveBehaviour()
         {
-            if (ActiveBlockingBehaviour != null && ActiveBlockingBehaviour.IsExecuting && !ActiveBlockingBehaviour.IsInteruptable) return;
+            if (ActiveBlockingBehaviour != null 
+                && ActiveBlockingBehaviour 
+                && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.Inactive
+                && !ActiveBlockingBehaviour.IsInteruptable) return;
 
             bool isInterupting = false;
-            if (ActiveBlockingBehaviour != null && ActiveBlockingBehaviour.IsExecuting)
+            if (ActiveBlockingBehaviour != null && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.Inactive)
             {
                 isInterupting = true;
             }
@@ -250,7 +261,7 @@ namespace WizardsCode.Stats {
                 log.Append("# Evaluating ");
                 log.AppendLine(m_AvailableBehaviours[i].DisplayName);
 
-                if (m_AvailableBehaviours[i].IsExecuting)
+                if (m_AvailableBehaviours[i].CurrentState != AbstractAIBehaviour.State.Inactive)
                 {
                     if (m_AvailableBehaviours[i].IsInteruptable)
                     {
@@ -331,25 +342,20 @@ namespace WizardsCode.Stats {
                         ActiveBlockingBehaviour = m_FallbackBehaviour;
                         if (ActiveBlockingBehaviour != null)
                         {
-                            ActiveBlockingBehaviour.StartBehaviour(ActiveBlockingBehaviour.MaximumExecutionTime);
+                            ActiveBlockingBehaviour.StartBehaviour();
                         }
-                    } else
-                    {
-                        ActiveBlockingBehaviour.IsExecuting = true;
-                        // Don't start the behaviour since we need the interactable to trigger the start upon arrival.
                     }
                 }
                 else
                 {
                     TargetInteractable = null;
-                    ActiveBlockingBehaviour.StartBehaviour(ActiveBlockingBehaviour.MaximumExecutionTime);
+                    ActiveBlockingBehaviour.StartBehaviour();
                 }
             }
             else
             {
                 candidateBehaviour.EndTime = 0;
-                candidateBehaviour.IsExecuting = true;
-                candidateBehaviour.StartBehaviour(candidateBehaviour.MaximumExecutionTime);
+                candidateBehaviour.StartBehaviour();
                 ActiveNonBlockingBehaviours.Add(candidateBehaviour);
             }
 

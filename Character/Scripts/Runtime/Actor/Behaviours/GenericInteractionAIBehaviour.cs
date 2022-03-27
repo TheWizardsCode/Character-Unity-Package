@@ -24,6 +24,7 @@ namespace WizardsCode.Character
         private Vector3 positionAtLastInteractableCheck = Vector3.zero;
         private List<Interactable> nearbyInteractablesCache = new List<Interactable>();
         internal Interactable CurrentInteractableTarget = default;
+        private Interactable m_Interactable;
 
         /// <summary>
         /// Start an interaction with a given object as part of this behaviour. This is
@@ -34,7 +35,12 @@ namespace WizardsCode.Character
         {
             m_ActorController.LookAtTarget = interactable.transform;
             m_ActorController.TurnToFace(interactable.transform.position);
-            StartBehaviour(interactable.Duration);
+
+            m_Interactable = interactable;
+
+            m_OnPerformAction = new ActorCue[] { m_Interactable.m_ActorPerformCue };
+
+            base.StartBehaviour();
         }
 
         public override bool IsAvailable

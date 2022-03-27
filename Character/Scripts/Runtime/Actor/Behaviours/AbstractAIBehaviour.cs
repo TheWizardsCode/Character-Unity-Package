@@ -77,8 +77,8 @@ namespace WizardsCode.Character
         [SerializeField, Tooltip("The conditions required in the worldstate for this behaviour to be valid.")]
         WorldStateSO[] m_RequiredWorldState;
 
-        enum State { Starting, Preparing, Performing, Finalizing, Ending }
-        State currentState = State.Starting;
+        public enum State { Starting, Preparing, Performing, Finalizing, Ending, Inactive }
+        public State CurrentState = State.Inactive;
 
         public float MaximumExecutionTime
         {
@@ -106,10 +106,10 @@ namespace WizardsCode.Character
 
         Brain m_Brain;
         internal BaseActorController m_ActorController;
-        private bool m_IsExecuting = false;
         private float m_NextRetryTime;
 
         internal StringBuilder reasoning = new StringBuilder();
+        private ActorCue performingCue;
 
         /// <summary>
         /// Get an array of all the things that have been recently sensed
@@ -163,9 +163,15 @@ namespace WizardsCode.Character
             set { m_RequiredStats = value; }
         }
 
-        public float EndTime { 
-            get; 
-            internal set; 
+        public float EndTime {
+            get;
+            internal set;
+        }
+
+        public float MaxEndTime
+        {
+            get;
+            internal set;
         }
 
         /// <summary>
@@ -174,7 +180,7 @@ namespace WizardsCode.Character
         internal bool isPrioritized { get; set; }
 
         /// <summary>
-        /// Tests to see if this behaviour is availble to be executed. That is are the necessary preconditions
+        /// Tests to see if this behaviour is available to be executed. That is are the necessary preconditions
         /// met.
         /// </summary>
         public virtual bool IsAvailable
@@ -186,8 +192,8 @@ namespace WizardsCode.Character
 
                 reasoning.Clear();
 
-                if (isPrioritized || (CheckWorldState() 
-                    && CheckCharacteHasRequiredStats() 
+                if (isPrioritized || (CheckWorldState()
+                    && CheckCharacteHasRequiredStats()
                     && CheckSenses()))
                 {
                     return true;
@@ -290,22 +296,6 @@ namespace WizardsCode.Character
         }
 
         /// <summary>
-        /// Is this behaviour the currently executing behaviour?
-        /// </summary>
-        public virtual bool IsExecuting {
-            get { return m_IsExecuting; }
-            internal set
-            {
-                if (value && !IsExecuting)
-                {
-                    EndTime = Time.timeSinceLevelLoad + m_MaximumExecutionTime;
-                }
-
-                m_IsExecuting = value;
-            }
-        }
-
-        /// <summary>
         /// Called when the behaviour is awoken, from the `Awake` method of the underlying
         /// `MonoBehaviour`.
         /// </summary>
@@ -320,39 +310,24 @@ namespace WizardsCode.Character
         /// an interactable and somehow this method gets called it will return with no
         /// actions (after logging a warning).
         /// </summary>
-        /// <param name="duration">The maximum duration that this behaviuour can take</param>
-        internal virtual void StartBehaviour(float duration)
+        /// <param name="maxDuration">The maximum duration that this behaviuour can take</param>
+        internal virtual void StartBehaviour()
         {
-            currentState = State.Starting;
+            CurrentState = State.Starting;
 
             isPrioritized = false;
-            IsExecuting = true;
-            EndTime = Time.timeSinceLevelLoad + duration;
-            AddCharacterInfluencers(duration);
+            MaxEndTime = Time.timeSinceLevelLoad + MaximumExecutionTime;
+            AddCharacterInfluencers(10);
 
             if (m_OnStart != null)
             {
                 Brain.Actor.Prompt(m_OnStart);
+                EndTime = Time.timeSinceLevelLoad + m_OnStart.Duration;
             }
 
             if (m_OnStartEvent != null)
             {
                 m_OnStartEvent.Invoke();
-            }
-
-            PerformAction();
-        }
-
-        protected void PerformAction()
-        {
-            currentState = State.Performing;
-            // TODO If this is enabled we get loads of twitching.
-            // Brain.Actor.TurnToFace(m_ActorController.LookAtTarget.position);
-
-            if (m_OnPerformAction.Length > 0)
-            {
-                ActorCue cue = m_OnPerformAction[Random.Range(0, m_OnPerformAction.Length)];
-                Brain.Actor.Prompt(cue);
             }
         }
 
@@ -394,7 +369,7 @@ namespace WizardsCode.Character
             float multiplier = m_WeightMultiplier + (Random.Range(-m_WeightVariation, m_WeightVariation));
             return BaseWeight(brain) * multiplier;
         }
-        
+
         /// <summary>
         /// The base weight is the weight befre the multiplier is applied.
         /// </summary>
@@ -424,8 +399,12 @@ namespace WizardsCode.Character
 
         public void Update()
         {
-            if (!IsExecuting) return;
-            OnUpdate();
+            if (CurrentState != State.Inactive
+                && (EndTime < Time.timeSinceLevelLoad
+                || MaxEndTime < Time.timeSinceLevelLoad))
+            {
+                OnUpdate();
+            }
         }
 
         /// <summary>
@@ -433,22 +412,77 @@ namespace WizardsCode.Character
         /// for interactables nearby that will satisfy the needs of this behaviour.
         /// </summary>
         protected virtual void OnUpdate()
-        {
-            if (EndTime < Time.timeSinceLevelLoad)
+        {   
+            if (CurrentState == State.Starting)
             {
-                if (currentState == State.Finalizing)
+                CurrentState = State.Preparing;
+
+                if (m_OnPrepare)
                 {
-                    EndTime = FinishBehaviour();
+                    Brain.Actor.Prompt(m_OnPrepare);
+                    EndTime = Time.timeSinceLevelLoad + m_OnPrepare.Duration;
+                } 
+                else
+                {
+                    EndTime = Time.timeSinceLevelLoad;
+                }
+                return;
+            }
+
+            if (CurrentState == State.Preparing)
+            {
+                CurrentState = State.Performing;
+
+                if (m_OnPerformAction.Length > 0)
+                {
+                    performingCue = m_OnPerformAction[Random.Range(0, m_OnPerformAction.Length)];
+                    if (performingCue != null)
+                    {
+                        Brain.Actor.Prompt(performingCue);
+                        EndTime = Time.timeSinceLevelLoad + performingCue.Duration;
+                    }
                 }
                 else
                 {
-                    if (m_OnFinalize != null)
-                    {
-                        Brain.Actor.Prompt(m_OnFinalize);
-                        EndTime = Time.timeSinceLevelLoad + m_OnFinalize.Duration;
-                    }
-                    currentState = State.Finalizing;
+                    EndTime = Time.timeSinceLevelLoad + 1;
                 }
+                return;
+            }
+
+            if (CurrentState == State.Performing)
+            {
+                CurrentState = State.Finalizing;
+
+                if (performingCue != null)
+                {
+                    StartCoroutine(performingCue.Revert(Brain.Actor));
+                }
+
+                if (m_OnFinalize != null)
+                {
+                    Brain.Actor.Prompt(m_OnFinalize);
+                    EndTime = Time.timeSinceLevelLoad + m_OnFinalize.Duration;
+                }
+                else
+                {
+                    EndTime = Time.timeSinceLevelLoad + 3;
+                }
+                return;
+            }
+
+            if (CurrentState == State.Finalizing)
+            {
+                CurrentState = State.Ending;
+
+                EndTime = FinishBehaviour();
+                return;
+            }
+
+            if (CurrentState == State.Ending)
+            {
+                CurrentState = State.Inactive;
+                Brain.ActiveBlockingBehaviour = null;
+                return;
             }
         }
 
@@ -485,11 +519,10 @@ namespace WizardsCode.Character
         /// <summary>
         /// Finish the behaviour, prompting any cue needed.
         /// </summary>
-        /// <returns>The time, since level load, at which this behaviour should end, if zero then it ends immediately.</returns>
+        /// <returns>The time, since level load, at which this behaviour should end.</returns>
         internal virtual float FinishBehaviour()
         {
-            IsExecuting = false;
-            EndTime = 0;
+            CurrentState = State.Ending;
 
             for (int i = 0; i < m_CharacterInfluences.Length; i++)
             {
@@ -513,11 +546,10 @@ namespace WizardsCode.Character
             if (m_OnEnd != null)
             {
                 Brain.Actor.Prompt(m_OnEnd);
-                return Time.timeSinceLevelLoad + m_OnEnd.Duration;
+                EndTime = Time.timeSinceLevelLoad + m_OnEnd.Duration;
             }
 
-            currentState = State.Ending;
-            return Time.timeSinceLevelLoad;
+            return EndTime;
         }
 
         public override string ToString()

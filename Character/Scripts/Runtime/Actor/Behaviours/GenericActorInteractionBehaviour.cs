@@ -76,7 +76,7 @@ namespace WizardsCode.Character.AI
 
         protected override void OnUpdate()
         {
-            if (!base.IsAvailable) FinishBehaviour();
+            if (CurrentState == State.Inactive) return;
 
             //TODO OPTIMIZATION probably don't need to update participants and position every tick
             int count = participants.Count;
@@ -94,6 +94,7 @@ namespace WizardsCode.Character.AI
                     if (m_OnStart != null)
                     {
                         Brain.Actor.Prompt(m_OnStart);
+                        EndTime = Time.timeSinceLevelLoad + m_OnStart.Duration;
                     }
                 }
                 else if (Time.timeSinceLevelLoad > m_HandshakeEndTime)
@@ -143,10 +144,8 @@ namespace WizardsCode.Character.AI
             }
         }
 
-        internal override void StartBehaviour(float duration)
+        internal override void StartBehaviour()
         {
-            IsExecuting = true;
-            m_Duration = duration;
             m_CooldownEndTime = m_CooldownDuration + Time.timeSinceLevelLoad;
             m_HandshakeEndTime = Time.timeSinceLevelLoad + m_HandshakeTimeout;
             m_IsHandshaking = m_RequireConsent;
@@ -171,15 +170,10 @@ namespace WizardsCode.Character.AI
                 }
             }
 
-            base.StartBehaviour(duration);
+            base.StartBehaviour();
 
             UpdateParticipantsList();
             UpdateInteractionPosition(true);
-
-            if (Vector3.SqrMagnitude(Brain.Actor.transform.position - m_InteractionPoint) <= 0.25f)
-            {
-                PerformAction();
-            }
         }
 
         /// <summary>
@@ -269,17 +263,15 @@ namespace WizardsCode.Character.AI
             }
             Brain.Actor.InteractionPoint.position = m_InteractionPoint;
 
+            // If we are too far away set start moving and set the callback to perform the action when arriving
             if (Vector3.SqrMagnitude(Brain.Actor.MoveTargetPosition - m_InteractionPoint) > m_SqrArrivingDistance)
             {
                 Brain.Actor.MoveTo(m_InteractionPoint,
                     () =>
                     {
-                        Brain.Actor.Prompt(m_OnPrepare);
+                        CurrentState = State.Preparing;
                     },
-                    () =>
-                    {
-                        PerformAction();
-                    },
+                    null,
                     null
                 );
             }

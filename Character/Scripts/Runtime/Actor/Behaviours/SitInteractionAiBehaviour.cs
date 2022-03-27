@@ -15,9 +15,9 @@ namespace WizardsCode.Character
         [SerializeField, Tooltip("An offset applied to the position of the character when they sit.")]
         float sittingOffset = 0.25f;
 
-        internal override void StartBehaviour(float duration)
+        internal override void StartBehaviour()
         {
-            base.StartBehaviour(duration);
+            base.StartBehaviour();
             Sit(CurrentInteractableTarget.interactionPoint);
         }
 

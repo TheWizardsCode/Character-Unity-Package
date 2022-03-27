@@ -42,7 +42,7 @@ namespace WizardsCode.Character
         }
 
         /// <summary>
-        /// Prompt and actor to enact the actions identified in this cue.
+        /// Prompt an actor to enact the actions identified in this cue.
         /// </summary>
         /// <returns>An optional coroutine that shouold be started by the calling MonoBehaviour</returns>
         public virtual IEnumerator Prompt(BaseActorController actor)
@@ -53,6 +53,15 @@ namespace WizardsCode.Character
             ProcessAudio();
 
             return UpdateCoroutine();
+        }
+
+        /// <summary>
+        /// Prompt an actor to revert any setup required by this cue.
+        /// </summary>
+        /// <returns>An optional coroutine that shouold be started by the calling MonoBehaviour</returns>
+        public virtual IEnumerator Revert(BaseActorController actor)
+        {
+            return null; // don't do anything by default. This is really only for AnimatorCues and similar that change state.
         }
 
         protected virtual IEnumerator UpdateCoroutine()

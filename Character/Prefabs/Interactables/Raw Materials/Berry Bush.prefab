@@ -779,18 +779,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66f048bfe15920a4e9328734b8239ff0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Description: 
   m_Type: {fileID: 11400000, guid: 71645a06cc86a75429783b63e74e2b38, type: 2}
   m_InteractionNameFromActorsPerspective: Picking and eating Berries
   m_MaxInteractors: 2
   m_CharacterInfluences:
   - statTemplate: {fileID: 11400000, guid: 4efea187304c1a04581b1f0b8cc341cf, type: 2}
     maxChange: -10
+    applyOnCompletion: 0
   - statTemplate: {fileID: 11400000, guid: 1134128b230d7734dad1c54314c6d317, type: 2}
     maxChange: -3
-  m_IsRepeating: 1
+    applyOnCompletion: 0
+  m_InteractionPoint: {fileID: 0}
   m_DestroyOnUse: 0
   m_ObjectInfluences: []
   m_Duration: 10
+  m_ActorCue: {fileID: 11400000, guid: aa397395b47864b4b8562db340fc3813, type: 2}
   m_Cooldown: 30
 --- !u!135 &7776779647833261115
 SphereCollider:

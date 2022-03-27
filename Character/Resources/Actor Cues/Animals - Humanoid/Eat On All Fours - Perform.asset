@@ -9,17 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 335506291277d6e4093c10c51e9a20df, type: 3}
-  m_Name: Melee Attack - Start
+  m_Script: {fileID: 11500000, guid: 95162dea08fa43a42b2ebe0dbe2ab9a2, type: 3}
+  m_Name: Eat On All Fours - Perform
   m_EditorClassIdentifier: 
   m_Description: 
-  Duration: 0
+  Duration: 20
   markName: 
   m_StopMovement: 0
   audioClip: {fileID: 0}
-  m_LayerName: Melee
-  m_LayerWeight: 1
-  m_LayerWeightChangeTime: 0.5
-  m_AnimationParams: []
-  animationClipName: 
-  animationNormalizedTime: 0

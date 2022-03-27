@@ -46,16 +46,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66f048bfe15920a4e9328734b8239ff0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Description: 
   m_Type: {fileID: 11400000, guid: 71645a06cc86a75429783b63e74e2b38, type: 2}
   m_InteractionNameFromActorsPerspective: Fell Tree
   m_MaxInteractors: 1
   m_CharacterInfluences:
   - statTemplate: {fileID: 11400000, guid: 3a65fd83ea52d7c4db1e8cc4c0ffafa0, type: 2}
     maxChange: 5
-  m_IsRepeating: 0
+    applyOnCompletion: 0
+  m_InteractionPoint: {fileID: 0}
   m_DestroyOnUse: 1
   m_ObjectInfluences: []
   m_Duration: 10
+  m_ActorCue: {fileID: 11400000, guid: aa397395b47864b4b8562db340fc3813, type: 2}
   m_Cooldown: 30
 --- !u!136 &262231911942616229
 CapsuleCollider:
