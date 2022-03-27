@@ -77,7 +77,7 @@ namespace WizardsCode.Character
         [SerializeField, Tooltip("The conditions required in the worldstate for this behaviour to be valid.")]
         WorldStateSO[] m_RequiredWorldState;
 
-        public enum State { Starting, Preparing, Performing, Finalizing, Ending, Inactive }
+        public enum State { Starting, Preparing, Performing, Finalizing, Ending, Inactive, MovingTo }
         public State CurrentState = State.Inactive;
 
         public float MaximumExecutionTime
@@ -482,6 +482,7 @@ namespace WizardsCode.Character
             {
                 CurrentState = State.Inactive;
                 Brain.ActiveBlockingBehaviour = null;
+                Brain.TargetInteractable = null;
                 return;
             }
         }

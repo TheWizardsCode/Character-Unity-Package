@@ -76,6 +76,7 @@ namespace WizardsCode.Character
             UpdateMove();
         }
 
+        /*
         protected override void OnUpdate()
         {
             timeToNextWanderPathChange -= Time.deltaTime;
@@ -86,6 +87,7 @@ namespace WizardsCode.Character
                 FinishBehaviour();
             }
         }
+        */
 
         internal override float FinishBehaviour()
         {
@@ -201,13 +203,6 @@ namespace WizardsCode.Character
                     return;
                 }
             }
-        }
-
-        /// <summary>
-        /// Called when a target has been reached.
-        /// </summary>
-        internal virtual void OnReachedTarget()
-        {
         }
 
 #if UNITY_EDITOR

@@ -102,8 +102,8 @@ namespace WizardsCode.Stats {
                 {
                     if (value.ReserveFor(this))
                     {
-                        //TODO move to an interaction point not to the transform position
                         Actor.MoveTargetPosition = value.interactionPoint.position;
+                        ActiveBlockingBehaviour.CurrentState = AbstractAIBehaviour.State.MovingTo;
                     }
                 }
             }
@@ -186,7 +186,10 @@ namespace WizardsCode.Stats {
                     return true;
                 } 
                 
-                if (ActiveBlockingBehaviour != null && !ActiveBlockingBehaviour.IsInteruptable)
+                if (ActiveBlockingBehaviour != null 
+                    && !ActiveBlockingBehaviour.IsInteruptable 
+                    && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.Inactive
+                    && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.MovingTo)
                 {
                     return false;
                 }
@@ -200,24 +203,10 @@ namespace WizardsCode.Stats {
             base.Update();
 
             if (!active) return;
-
-            if (!isReadyToUpdateBehaviour
-                || (ActiveBlockingBehaviour != null
-                    && ActiveBlockingBehaviour.CurrentState == AbstractAIBehaviour.State.Inactive))
+            
+            if (!isReadyToUpdateBehaviour)
             {
                 return;
-            }
-
-            if (TargetInteractable != null && ActiveBlockingBehaviour != null)
-            {
-                if (Vector3.SqrMagnitude(TargetInteractable.transform.position - Actor.MoveTargetPosition) > 0.7f)
-                {
-                    Actor.MoveTargetPosition = TargetInteractable.transform.position;
-                }
-                else
-                {
-                    TargetInteractable.StartCharacterInteraction(this);
-                }
             }
 
             UpdateActiveBehaviour();
@@ -248,6 +237,7 @@ namespace WizardsCode.Stats {
             if (ActiveBlockingBehaviour != null 
                 && ActiveBlockingBehaviour 
                 && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.Inactive
+                && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.MovingTo
                 && !ActiveBlockingBehaviour.IsInteruptable) return;
 
             bool isInterupting = false;
