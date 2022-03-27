@@ -201,7 +201,12 @@ namespace WizardsCode.Stats {
 
             if (!active) return;
 
-            if (!isReadyToUpdateBehaviour) return;
+            if (!isReadyToUpdateBehaviour
+                || (ActiveBlockingBehaviour != null
+                    && ActiveBlockingBehaviour.CurrentState == AbstractAIBehaviour.State.Inactive))
+            {
+                return;
+            }
 
             if (TargetInteractable != null && ActiveBlockingBehaviour != null)
             {
