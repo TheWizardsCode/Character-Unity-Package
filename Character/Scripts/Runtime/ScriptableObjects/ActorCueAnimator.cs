@@ -21,6 +21,8 @@ namespace WizardsCode.Character
         float m_LayerWeight = 1;
         [SerializeField, Range(0f, 20), Tooltip("The time in seconds that it will take to reach the new layer weight.")]
         float m_LayerWeightChangeTime = 0.5f;
+        [SerializeField, Tooltip("Should the layer weight be reverted back to the original level once this cue has completed?")]
+        bool m_RevertLayerWeight = false;
 
         public enum ParameterType { Float, Int, Bool, Trigger }
         [Header("Animation Parameters")]
@@ -43,7 +45,7 @@ namespace WizardsCode.Character
 
         private void ProcessAnimationLayerWeights()
         {
-            if (m_Actor.Animator != null)
+            if (m_Actor.Animator != null && m_LayerIndex >= 0)
             {
                 m_LayerIndex = m_Actor.Animator.GetLayerIndex(m_LayerName);
                 m_OriginalLayerWeight = m_Actor.Animator.GetLayerWeight(m_LayerIndex);
@@ -52,16 +54,19 @@ namespace WizardsCode.Character
 
         private IEnumerator RevertAnimationLayerWeights()
         {
-            if (m_Actor.Animator != null && m_LayerIndex >= 0 && m_Actor.Animator.GetLayerWeight(m_LayerIndex) != m_OriginalLayerWeight)
+            if (m_RevertLayerWeight)
             {
-                float originalWeight = m_Actor.Animator.GetLayerWeight(m_LayerIndex);
-                float time = 0;
-                while (!Mathf.Approximately(m_Actor.Animator.GetLayerWeight(m_LayerIndex), m_LayerWeight))
+                if (m_Actor.Animator != null && m_LayerIndex >= 0 && m_Actor.Animator.GetLayerWeight(m_LayerIndex) != m_OriginalLayerWeight)
                 {
-                    time += Time.deltaTime;
-                    m_Actor.Animator.SetLayerWeight(m_LayerIndex,
-                        Mathf.Lerp(originalWeight, m_LayerWeight, time / m_LayerWeightChangeTime));
-                    yield return new WaitForEndOfFrame();
+                    float originalWeight = m_Actor.Animator.GetLayerWeight(m_LayerIndex);
+                    float time = 0;
+                    while (!Mathf.Approximately(m_Actor.Animator.GetLayerWeight(m_LayerIndex), m_LayerWeight))
+                    {
+                        time += Time.deltaTime;
+                        m_Actor.Animator.SetLayerWeight(m_LayerIndex,
+                            Mathf.Lerp(originalWeight, m_LayerWeight, time / m_LayerWeightChangeTime));
+                        yield return new WaitForEndOfFrame();
+                    }
                 }
             }
 

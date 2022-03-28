@@ -45,25 +45,17 @@ namespace WizardsCode.Character.Stats
         Dictionary<string, StatUIPanel> stateUIObjects = new Dictionary<string, StatUIPanel>();
         void Update()
         {
-            if (m_SelectionManager != null && m_SelectionManager.CurrentlySelected != null && (m_SelectedCharacter == null || !GameObject.ReferenceEquals(m_SelectedCharacter.gameObject, m_SelectionManager.CurrentlySelected)))
+            if (m_SelectionManager != null 
+                && m_SelectionManager.CurrentlySelected != null 
+                && (m_SelectedCharacter == null 
+                    || !GameObject.ReferenceEquals(m_SelectedCharacter, m_SelectionManager.CurrentlySelected)))
             {
-                m_SelectedCharacter = m_SelectionManager.CurrentlySelected.GetComponentInChildren<Brain>();
+                m_SelectedCharacter = m_SelectionManager.CurrentlySelected;
                 ClearStatesUI();
-            }
-
-            //TODO: don't update every frame
-            if (m_SelectedCharacter != null)
-            {
-                if (m_BehaviourLabel != null && m_SelectedCharacter.ActiveBlockingBehaviour != null)
-                {
-                    string duration = Mathf.Clamp(m_SelectedCharacter.ActiveBlockingBehaviour.EndTime - Time.timeSinceLevelLoad, 0, float.MaxValue).ToString("0.0");
-                    m_BehaviourLabel.text = $"{m_SelectedCharacter.DisplayName} - {m_SelectedCharacter.ActiveBlockingBehaviour.DisplayName} - Status is {m_SelectedCharacter.ActiveBlockingBehaviour.CurrentState}. Finishes in {duration}";
-                }
 
                 StateSO[] states = m_SelectedCharacter.DesiredStates;
                 if (states.Length != transform.childCount)
                 {
-                    ClearStatesUI();
                     for (int i = 0; i < states.Length; i++)
                     {
                         if (states[i].statTemplate == null) continue;
@@ -80,6 +72,23 @@ namespace WizardsCode.Character.Stats
 
                             stateUIObjects.Add(stat.DisplayName, stateUI);
                         }
+                    }
+                }
+            }
+
+            //TODO: don't update every frame
+            if (m_SelectedCharacter != null)
+            {
+                if (m_BehaviourLabel != null)
+                {
+                    
+                    if (m_SelectedCharacter.ActiveBlockingBehaviour != null)
+                    {
+                        string duration = Mathf.Clamp(m_SelectedCharacter.ActiveBlockingBehaviour.EndTime - Time.timeSinceLevelLoad, 0, float.MaxValue).ToString("0.0");
+                        m_BehaviourLabel.text = $"{m_SelectedCharacter.DisplayName} - {m_SelectedCharacter.ActiveBlockingBehaviour.DisplayName} - Status is {m_SelectedCharacter.ActiveBlockingBehaviour.CurrentState}. Finishes in {duration}";
+                    } else
+                    {
+                        m_BehaviourLabel.text = $"{m_SelectedCharacter.DisplayName} - Idle.";
                     }
                 }
             }
