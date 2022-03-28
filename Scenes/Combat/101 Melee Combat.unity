@@ -630,7 +630,7 @@ MonoBehaviour:
   m_HandshakeTimeout: 4
   m_CooldownDuration: 1
   m_NavMeshMask: -1
-  m_TimeUntilDamage: 1
+  m_TimeUntilDamage: 0.7
   m_EnemyHitInfluences:
   - {fileID: 11400000, guid: 4d9389ec4b1f9904188ad93957675c5b, type: 2}
 --- !u!1 &827708978
@@ -944,6 +944,12 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 5819142872271090333, guid: e1e8e82ae1c28e14e8e96f43d602c2a5,
+        type: 3}
+      propertyPath: m_FallbackBehaviour
+      value: 
+      objectReference: {fileID: 6260553765645241812, guid: 4a7e2048c3cbc2646bb07b251305b90d,
+        type: 3}
     - target: {fileID: 5819142872271090333, guid: e1e8e82ae1c28e14e8e96f43d602c2a5,
         type: 3}
       propertyPath: m_ShowBehaviourIcon

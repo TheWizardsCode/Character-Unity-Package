@@ -154,7 +154,8 @@ namespace WizardsCode.Stats {
         private void UpdateDesiredStatesList()
         {
             List<StatInfluencerSO> influencers = new List<StatInfluencerSO>();
-            List<AbstractAIBehaviour> behaviours = new List<AbstractAIBehaviour>();
+            List<AbstractAIBehaviour> satisfiedBehaviours = new List<AbstractAIBehaviour>();
+            List<AbstractAIBehaviour> unsatisfiedBehaviours = new List<AbstractAIBehaviour>();
             bool isSatisfied;
             UnsatisfiedDesiredStates.Clear();
 
@@ -162,7 +163,6 @@ namespace WizardsCode.Stats {
 
             for (int i = 0; i < DesiredStates.Length; i++)
             {
-                behaviours = DesiredStates[i].SatisfiedBehaviours;
                 if (DesiredStates[i].IsSatisfiedFor(this))
                 {
                     influencers = DesiredStates[i].InfluencersToApplyWhenInDesiredState;
@@ -180,16 +180,40 @@ namespace WizardsCode.Stats {
                     TryAddInfluencer(ScriptableObject.Instantiate(influencers[idx]));
                 }
 
+
+                satisfiedBehaviours = DesiredStates[i].SatisfiedBehaviours;
+                unsatisfiedBehaviours = DesiredStates[i].UnsatisfiedBehaviours;
                 Transform behaviourT;
                 string behaviourName;
-                for (int idx = 0; idx < behaviours.Count; idx++)
+
+                for (int idx = 0; idx < satisfiedBehaviours.Count; idx++)
                 {
-                    behaviourName = behaviours[idx].DisplayName + " behaviours from desired state " + DesiredStates[i].name;
+                    behaviourName = satisfiedBehaviours[idx].DisplayName + " behaviours from satisfied desired state " + DesiredStates[i].name;
+                    // OPTIMIZATION can we avoid Find?
                     behaviourT = transform.Find(behaviourName);
+
                     if (isSatisfied && behaviourT == null)
                     {   
-                        Instantiate(behaviours[idx].gameObject, transform).name = behaviourName;
+                        // OPTIMIZATION use a pool
+                        Instantiate(satisfiedBehaviours[idx].gameObject, transform).name = behaviourName;
                     } else if (!isSatisfied && behaviourT != null)
+                    {
+                        Destroy(behaviourT.gameObject);
+                    }
+                }
+
+                for (int idx = 0; idx < unsatisfiedBehaviours.Count; idx++)
+                {
+                    behaviourName = unsatisfiedBehaviours[idx].DisplayName + " behaviours from unsatisfied desired state " + DesiredStates[i].name;
+                    // OPTIMIZATION can we avoid Find?
+                    behaviourT = transform.Find(behaviourName);
+
+                    if (!isSatisfied && behaviourT == null)
+                    {
+                        // OPTIMIZATION use a pool
+                        Instantiate(unsatisfiedBehaviours[idx].gameObject, transform).name = behaviourName;
+                    }
+                    else if (isSatisfied && behaviourT != null)
                     {
                         Destroy(behaviourT.gameObject);
                     }

@@ -35,6 +35,8 @@ namespace WizardsCode.Character
         List<StatInfluencerSO> m_InDesiredState = new List<StatInfluencerSO>();
         [SerializeField, Tooltip("Behaviours to add when this state is satisfied, and remove when unsatisfied.")]
         List<AbstractAIBehaviour> m_SatisfiedBehaviours = new List<AbstractAIBehaviour>();
+        [SerializeField, Tooltip("Behaviours to add when this state is unsatisfied, and remove when satisfied.")]
+        List<AbstractAIBehaviour> m_UnsatisfiedBehaviours = new List<AbstractAIBehaviour>();
 
         [Header("Sub States")]
         [SerializeField, Tooltip("A collection of states that must also be satisfied for this state to be satisfied.")]
@@ -57,11 +59,20 @@ namespace WizardsCode.Character
 
         /// <summary>
         /// A list of behaviours that should be added to a character when this state is 
-        /// satisfied and removed when not.
+        /// satisfied and removed when unsatisfied.
         /// </summary>
         public List<AbstractAIBehaviour> SatisfiedBehaviours
         {
             get { return m_SatisfiedBehaviours; }
+        }
+
+        /// <summary>
+        /// A list of behaviours that should be added to a character when this state is 
+        /// unsatisfied and removed when satisfied.
+        /// </summary>
+        public List<AbstractAIBehaviour> UnsatisfiedBehaviours
+        {
+            get { return m_UnsatisfiedBehaviours; }
         }
 
         public StatSO statTemplate

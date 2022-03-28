@@ -19,3 +19,4 @@ In this scene there are two characters. They wander around. If they see the othe
     * Ensure `Require Consent` is set to false
     * Reduce the `Cooldown Time` to 1 second
     * Add the `Fists Damage Influencer` to the `Enemy Stat Influencers`
+  
