@@ -44,19 +44,22 @@ namespace WizardsCode.Character
         [SerializeField, Tooltip("Events to fire when this behaviour is finished.")]
         protected UnityEvent m_OnEndEvent;
         [SerializeField, Tooltip("An actor cue to send to the actor upon the start of this interaction. It should be used to configure the actor ready for the interaction.")]
-        [FormerlySerializedAs("m_OnStartCue")] // v0.11
-        protected ActorCue m_OnStart;
+        [FormerlySerializedAs("m_OnStart")] // v0.12
+        protected ActorCue m_OnStartCue;
         [SerializeField, Tooltip("An actor cue to send to the actor as they start the prepare phase of this interaction. This is where you will typically play wind up animations and the like.")]
         [FormerlySerializedAs("m_OnArrivingCue")] // v0.11
-        protected ActorCue m_OnPrepare;
+        [FormerlySerializedAs("m_OnPrepare")] // v0.12
+        protected ActorCue m_OnPrepareCue;
         [SerializeField, Tooltip("A set of actor cues from which to randomly select an appropriate cue when enacting this behaviour. This is where you will usually play animations and sounds reflecting the interaction itself.")]
         [FormerlySerializedAs("m_OnPerformInteraction")] // changed in v0.1.1
-        protected ActorCue[] m_OnPerformAction;
+        [FormerlySerializedAs("m_OnPerformAction")] // v0.12
+        protected ActorCue[] m_OnPerformCue;
         [SerializeField, Tooltip("An actor cue to send to the actor as they finalize this interaction. This is where you will typically play wind up animations and the like.")]
-        protected ActorCue m_OnFinalize;
+        [FormerlySerializedAs("m_OnFinalize")] // v0.12
+        protected ActorCue m_OnFinalizeCue;
         [SerializeField, Tooltip("An actor cue sent when ending this interaction. This should set the character back to their default state.")]
-        [FormerlySerializedAs("m_OnEndCue")] // v0.11
-        protected ActorCue m_OnEnd;
+        [FormerlySerializedAs("m_OnEnd")] // v0.12
+        protected ActorCue m_OnEndCue;
         [SerializeField, Tooltip("If this behaviour should always be followed by the same behaviour (assuming it is possible) drop the behaviour here. If this is null the brain will be free to select its own behaviour")]
         AbstractAIBehaviour m_NextBehaviour;
 
@@ -319,10 +322,10 @@ namespace WizardsCode.Character
             MaxEndTime = Time.timeSinceLevelLoad + MaximumExecutionTime;
             AddCharacterInfluencers(10);
 
-            if (m_OnStart != null)
+            if (m_OnStartCue != null)
             {
-                Brain.Actor.Prompt(m_OnStart);
-                EndTime = Time.timeSinceLevelLoad + m_OnStart.Duration;
+                Brain.Actor.Prompt(m_OnStartCue);
+                EndTime = Time.timeSinceLevelLoad + m_OnStartCue.Duration;
             }
 
             if (m_OnStartEvent != null)
@@ -415,17 +418,7 @@ namespace WizardsCode.Character
         {   
             if (CurrentState == State.Starting)
             {
-                CurrentState = State.Preparing;
-
-                if (m_OnPrepare)
-                {
-                    Brain.Actor.Prompt(m_OnPrepare);
-                    EndTime = Time.timeSinceLevelLoad + m_OnPrepare.Duration;
-                } 
-                else
-                {
-                    EndTime = Time.timeSinceLevelLoad;
-                }
+                CuePrepare();
                 return;
             }
 
@@ -433,9 +426,9 @@ namespace WizardsCode.Character
             {
                 CurrentState = State.Performing;
 
-                if (m_OnPerformAction.Length > 0)
+                if (m_OnPerformCue.Length > 0)
                 {
-                    performingCue = m_OnPerformAction[Random.Range(0, m_OnPerformAction.Length)];
+                    performingCue = m_OnPerformCue[Random.Range(0, m_OnPerformCue.Length)];
                     if (performingCue != null)
                     {
                         Brain.Actor.Prompt(performingCue);
@@ -458,10 +451,10 @@ namespace WizardsCode.Character
                     StartCoroutine(performingCue.Revert(Brain.Actor));
                 }
 
-                if (m_OnFinalize != null)
+                if (m_OnFinalizeCue != null)
                 {
-                    Brain.Actor.Prompt(m_OnFinalize);
-                    EndTime = Time.timeSinceLevelLoad + m_OnFinalize.Duration;
+                    Brain.Actor.Prompt(m_OnFinalizeCue);
+                    EndTime = Time.timeSinceLevelLoad + m_OnFinalizeCue.Duration;
                 }
                 else
                 {
@@ -486,6 +479,31 @@ namespace WizardsCode.Character
                 return;
             }
         }
+
+        private void CuePrepare()
+        {
+            CurrentState = State.Preparing;
+
+            if (m_OnPrepareCue)
+            {
+                Brain.Actor.Prompt(m_OnPrepareCue);
+                EndTime = Time.timeSinceLevelLoad + m_OnPrepareCue.Duration;
+            }
+            else
+            {
+                EndTime = Time.timeSinceLevelLoad;
+            }
+
+            OnPrepareCue();
+        }
+
+        /// <summary>
+        /// Called whenever the PrepareCue is prompted. Subclasses can use this method to
+        /// insert additional actions at this point in the behaviour lifecycle. 
+        /// 
+        /// By default this method does nothing.
+        /// </summary>
+        protected virtual void OnPrepareCue() { }
 
         private void OnEnable()
         {
@@ -544,10 +562,10 @@ namespace WizardsCode.Character
                 Brain.PrioritizeBehaviour(m_NextBehaviour);
             }
 
-            if (m_OnEnd != null)
+            if (m_OnEndCue != null)
             {
-                Brain.Actor.Prompt(m_OnEnd);
-                EndTime = Time.timeSinceLevelLoad + m_OnEnd.Duration;
+                Brain.Actor.Prompt(m_OnEndCue);
+                EndTime = Time.timeSinceLevelLoad + m_OnEndCue.Duration;
             }
 
             return EndTime;

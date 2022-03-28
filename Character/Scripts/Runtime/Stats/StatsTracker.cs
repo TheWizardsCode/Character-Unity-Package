@@ -293,16 +293,20 @@ namespace WizardsCode.Stats {
         /// <returns>True if the influencer was added, otherwise false.</returns>
         public virtual bool TryAddInfluencer(StatInfluencerSO influencer)
         {
-            bool exists = false;
+            if (influencer.ResetInfluenceApplied)
+            {
+                influencer.influenceApplied = 0;
+            }
+
             // check that if an influencer already exists we are not in a cooldown period for this influencer
             for (int i = StatsInfluencers.Count -1; i >= 0; i--)
             {
                 if (StatsInfluencers[i].InteractionName == influencer.InteractionName)
                 {
-                    exists = true;
                     if (Time.timeSinceLevelLoad > StatsInfluencers[i].CooldownCompleteTime)
                     {
                         StatsInfluencers.Add(influencer);
+                        return true;
                     } else
                     {
                         // it already exists and we are in cooldown, don't add again.
@@ -312,10 +316,7 @@ namespace WizardsCode.Stats {
             }
 
             // If the influencer doesn't already exist add it
-            if (!exists)
-            {
-                StatsInfluencers.Add(influencer);
-            }
+            StatsInfluencers.Add(influencer);
             return true;
         }
 

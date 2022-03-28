@@ -70,8 +70,8 @@ namespace WizardsCode.Character
         {
             base.StartBehaviour();
 
-            Brain.Actor.Prompt(m_OnStart);
-            Brain.Actor.Prompt(m_OnPrepare);
+            Brain.Actor.Prompt(m_OnStartCue);
+            Brain.Actor.Prompt(m_OnPrepareCue);
 
             UpdateMove();
         }

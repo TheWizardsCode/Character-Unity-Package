@@ -307,6 +307,59 @@ Transform:
   m_Father: {fileID: 69244048}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &217285537
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 217285538}
+  - component: {fileID: 217285539}
+  m_Layer: 9
+  m_Name: Enemy Senses
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &217285538
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 217285537}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 913191902}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &217285539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 217285537}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2bac5c30d4ef294ca1cd1369c67f5d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: Spot enemy
+  m_MinRange: 1
+  m_MaxRange: 100
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 256
+  m_Tag: 
+  maxSensedColliders: 50
+  m_ComponentTypeNameToSense: WizardsCode.Stats.StatsTracker
+  m_StatInfluencer: {fileID: 0}
 --- !u!1 &303282566
 GameObject:
   m_ObjectHideFlags: 0
@@ -507,7 +560,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 804045922}
-  - component: {fileID: 804045924}
+  - component: {fileID: 804045923}
   m_Layer: 9
   m_Name: Spotted Enemy Behaviours
   m_TagString: Untagged
@@ -529,7 +582,7 @@ Transform:
   m_Father: {fileID: 913191902}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &804045924
+--- !u!114 &804045923
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -538,7 +591,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 804045921}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4bd4c0148aafcb4097755794c8ecb63, type: 3}
+  m_Script: {fileID: 11500000, guid: 1554d172be0bd354f814cdcbbb6f8073, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Description: Move to and attack an enemy that has been spotted
@@ -554,17 +607,17 @@ MonoBehaviour:
   m_OnEndEvent:
     m_PersistentCalls:
       m_Calls: []
-  m_OnStart: {fileID: 11400000, guid: 1944feae365af034ebae8acd8785e513, type: 2}
-  m_OnPrepare: {fileID: 11400000, guid: da4b76468560a0e4f89e84e150f9672c, type: 2}
-  m_OnPerformAction:
+  m_OnStartCue: {fileID: 11400000, guid: 1944feae365af034ebae8acd8785e513, type: 2}
+  m_OnPrepareCue: {fileID: 11400000, guid: da4b76468560a0e4f89e84e150f9672c, type: 2}
+  m_OnPerformCue:
   - {fileID: 11400000, guid: cd61d23578984444bb2ca0ef73fa8237, type: 2}
-  m_OnFinalize: {fileID: 11400000, guid: b752f3a85d1004a4a8f49b109b89c428, type: 2}
-  m_OnEnd: {fileID: 11400000, guid: 90fe31304202f63478beccae32a8ccc5, type: 2}
+  m_OnFinalizeCue: {fileID: 11400000, guid: b752f3a85d1004a4a8f49b109b89c428, type: 2}
+  m_OnEndCue: {fileID: 11400000, guid: 90fe31304202f63478beccae32a8ccc5, type: 2}
   m_NextBehaviour: {fileID: 0}
   m_WeightMultiplier: 1
   m_WeightVariation: 0.1
   m_RequiredSenses:
-  - {fileID: 913191903}
+  - {fileID: 217285539}
   m_RequiredStats: []
   m_CharacterInfluences: []
   m_DesiredStateImpacts: []
@@ -577,6 +630,9 @@ MonoBehaviour:
   m_HandshakeTimeout: 4
   m_CooldownDuration: 1
   m_NavMeshMask: -1
+  m_TimeUntilDamage: 1
+  m_EnemyHitInfluences:
+  - {fileID: 11400000, guid: 4d9389ec4b1f9904188ad93957675c5b, type: 2}
 --- !u!1 &827708978
 GameObject:
   m_ObjectHideFlags: 0
@@ -805,40 +861,12 @@ Transform:
   m_Father: {fileID: 1854190246}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &913191901 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4641898840036572808, guid: e1e8e82ae1c28e14e8e96f43d602c2a5,
-    type: 3}
-  m_PrefabInstance: {fileID: 6308413667123468}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &913191902 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1265972424959636580, guid: e1e8e82ae1c28e14e8e96f43d602c2a5,
     type: 3}
   m_PrefabInstance: {fileID: 6308413667123468}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &913191903
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 913191901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2bac5c30d4ef294ca1cd1369c67f5d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  description: Spot enemy
-  m_MinRange: 1
-  m_MaxRange: 100
-  m_LayerMask:
-    serializedVersion: 2
-    m_Bits: 256
-  m_Tag: 
-  maxSensedColliders: 50
-  m_ComponentTypeNameToSense: WizardsCode.Stats.StatsTracker
-  m_StatInfluencer: {fileID: 0}
 --- !u!1001 &913282599
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1749,6 +1777,11 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5049930526409854810, guid: 565f3debb24a0b24bb53067f704ee61d,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.00012207031
+      objectReference: {fileID: 0}
     - target: {fileID: 5306088966333834205, guid: 565f3debb24a0b24bb53067f704ee61d,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -2033,11 +2066,11 @@ MonoBehaviour:
   m_OnEndEvent:
     m_PersistentCalls:
       m_Calls: []
-  m_OnStart: {fileID: 0}
-  m_OnPrepare: {fileID: 0}
-  m_OnPerformAction: []
-  m_OnFinalize: {fileID: 0}
-  m_OnEnd: {fileID: 0}
+  m_OnStartCue: {fileID: 0}
+  m_OnPrepareCue: {fileID: 0}
+  m_OnPerformCue: []
+  m_OnFinalizeCue: {fileID: 0}
+  m_OnEndCue: {fileID: 0}
   m_NextBehaviour: {fileID: 0}
   m_WeightMultiplier: 0.5
   m_WeightVariation: 0.1

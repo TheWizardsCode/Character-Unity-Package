@@ -19,10 +19,12 @@ namespace WizardsCode.Stats
         StatSO m_stat;
         [SerializeField, Tooltip("The maximum amount of change this influencer will impart upon the stat. If the stat will never be taken beyond its maximum and minimum allowable values.")]
         float m_MaxChange = 10;
-        [SerializeField, Range(1, 1200), Tooltip("The time, in seconds, over which the influencer will be effective. The change will occur over this time period, up to the limit of the stat or the maxChange of this influencer. If duration is 0 then the total change is applied instantly.")]
+        [SerializeField, Range(0, 1200), Tooltip("The time, in seconds, over which the influencer will be effective. The change will occur over this time period, up to the limit of the stat or the maxChange of this influencer. If duration is 0 then the total change is applied instantly.")]
         float m_Duration = 5;
         [SerializeField, Tooltip("The cooldown period before a character can be influenced by this same influencer again, in seconds.")]
         float m_CooldownDuration = 5;
+        [SerializeField, Tooltip("Should the influence applied be reset each time this influencer is added to an influenced object? If set to true then inflience applied will be set to 0 and up to Max Change will be applied again. If set to false then the influence applied will not be reset and thus the Max Change will be the difference between the Max Change set above and any influence previously applied - that is this influencers influence will run out.")]
+        internal bool ResetInfluenceApplied = true;
 
         [HideInInspector, SerializeField]
         float m_InfluenceApplied = 0;

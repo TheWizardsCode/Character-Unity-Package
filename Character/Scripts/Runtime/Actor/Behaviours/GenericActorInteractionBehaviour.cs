@@ -38,7 +38,7 @@ namespace WizardsCode.Character.AI
         private float m_Duration;
         private float m_HandshakeEndTime;
         private bool m_IsHandshaking = false;
-        List<StatsTracker> participants = new List<StatsTracker>();
+        internal List<StatsTracker> participants = new List<StatsTracker>();
         private NavMeshAgent m_Agent;
         private float m_SqrArrivingDistance;
 
@@ -91,10 +91,10 @@ namespace WizardsCode.Character.AI
 
                     EndTime = Time.timeSinceLevelLoad + m_Duration;
                     AddCharacterInfluencers(m_Duration);
-                    if (m_OnStart != null)
+                    if (m_OnStartCue != null)
                     {
-                        Brain.Actor.Prompt(m_OnStart);
-                        EndTime = Time.timeSinceLevelLoad + m_OnStart.Duration;
+                        Brain.Actor.Prompt(m_OnStartCue);
+                        EndTime = Time.timeSinceLevelLoad + m_OnStartCue.Duration;
                     }
                 }
                 else if (Time.timeSinceLevelLoad > m_HandshakeEndTime)

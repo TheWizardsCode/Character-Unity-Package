@@ -38,7 +38,7 @@ namespace WizardsCode.Character
 
             m_Interactable = interactable;
 
-            m_OnPerformAction = new ActorCue[] { m_Interactable.m_ActorPerformCue };
+            m_OnPerformCue = new ActorCue[] { m_Interactable.m_ActorPerformCue };
 
             base.StartBehaviour();
         }
