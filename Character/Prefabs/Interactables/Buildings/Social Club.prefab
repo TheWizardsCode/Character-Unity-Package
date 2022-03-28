@@ -110,8 +110,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Description: 
   m_Type: {fileID: 11400000, guid: 17cc9c6099700554d8f1a36d333dd9d7, type: 2}
-  m_InteractionNameFromActorsPerspective: Socialize - Eating
-  m_MaxInteractors: 20
+  m_InteractionNameFromActorsPerspective: Socialize with Food
+  m_MaxInteractors: 10
   m_CharacterInfluences:
   - statTemplate: {fileID: 11400000, guid: be586581a85615540afb94067ec131a2, type: 2}
     maxChange: -10
@@ -128,7 +128,7 @@ MonoBehaviour:
   - statTemplate: {fileID: 11400000, guid: cf9e8ec2f416536438ba755bec4df9d6, type: 2}
     maxChange: -7
     applyOnCompletion: 0
-  m_ActorCue: {fileID: 11400000, guid: 461ce6ee321b4064e99a08f9c8c16d65, type: 2}
+  m_ActorPerformCue: {fileID: 11400000, guid: cc6bd807b8c19ee47b09cdeffbc86cf4, type: 2}
   m_Cooldown: 100
 --- !u!114 &494245768
 MonoBehaviour:

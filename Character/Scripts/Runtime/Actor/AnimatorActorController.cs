@@ -46,7 +46,7 @@ namespace WizardsCode.Character
                 m_Animator.SetFloat(m_TurnParameterName, turn);
             }
 
-            if (speedParam > 0.01 || turn > 0.01)
+            if (Mathf.Abs(speedParam) > 0.05 || Mathf.Abs(turn) > 0.05)
             {
                 state = States.Moving;
             }

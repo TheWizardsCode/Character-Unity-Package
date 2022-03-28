@@ -227,6 +227,36 @@ Transform:
   m_Father: {fileID: 8964903056521333826}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1928925952417988009
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 729706386906039361}
+  m_Layer: 0
+  m_Name: Look At target for Neo Trader
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &729706386906039361
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1928925952417988009}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.7, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1092428406338390617}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1972229931054736510
 GameObject:
   m_ObjectHideFlags: 0
@@ -428,8 +458,7 @@ GameObject:
   - component: {fileID: 8191768117270883893}
   - component: {fileID: 7247646320329116814}
   - component: {fileID: 6577703726389669823}
-  - component: {fileID: 5589175333303956111}
-  - component: {fileID: 2897789949868748576}
+  - component: {fileID: 1491305059565833326}
   m_Layer: 0
   m_Name: Neo Trader
   m_TagString: Untagged
@@ -452,6 +481,7 @@ Transform:
   - {fileID: 6506617761972167037}
   - {fileID: 2348857755019089224}
   - {fileID: 5153980171199940043}
+  - {fileID: 729706386906039361}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -634,7 +664,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c16293aed1528d24aad933246e10feee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_DisplayName: 
   m_DesiredStates:
   - {fileID: 11400000, guid: 53dc65a468340dd458f231254029ab52, type: 2}
   - {fileID: 11400000, guid: c0811d82e3a1aeb40b0f48bab0f522af, type: 2}
@@ -646,7 +675,13 @@ MonoBehaviour:
   m_TimeBetweenUpdates: 0.5
   m_Stats: []
   m_StatsInfluencers: []
---- !u!114 &5589175333303956111
+  m_TimingVariation: 0.2
+  m_FallbackBehaviour: {fileID: 0}
+  m_ShowBehaviourIcon: 1
+  m_IconUI: {fileID: 0}
+  m_DefaultIcon: {fileID: 0}
+  m_MissingIcon: {fileID: 0}
+--- !u!114 &1491305059565833326
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -655,24 +690,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 4388119967545133012}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a6accd2cb69e3e4fa6abfca9de05a98, type: 3}
+  m_Script: {fileID: 11500000, guid: ddbed55c3bc6ea743aa1bc24ae8cb36e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SpeedParameterName: Forward
-  TurnParameterName: Turn
+  m_MaxSpeed: 8
+  m_MinRunDistance: 15
+  m_MinSprintDistance: 30
+  m_WalkSpeedFactor: 0.45
+  m_RunSpeedFactor: 0.8
+  m_ArrivingDistance: 1
+  m_LookAtTarget: {fileID: 729706386906039361}
+  m_IsLookAtIKActive: 1
+  head: {fileID: 0}
+  m_LookAtSpeed: 6
+  m_LookAtHeatTime: 0.2
+  m_LookAtCoolTime: 0.2
+  m_Animator: {fileID: 0}
+  m_SpeedParameterName: Forward
+  m_TurnParameterName: Turn
   m_RunningSpeed: 8
---- !u!114 &2897789949868748576
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4388119967545133012}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d83f3ce966261b4888d7b2737f98b11, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  isFootIKActive: 0
 --- !u!1 &4526054188088772946
 GameObject:
   m_ObjectHideFlags: 0
@@ -819,11 +856,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Description: 
   m_DisplayName: Eat
-  m_OnStartCue: {fileID: 0}
-  m_OnEndCue: {fileID: 0}
+  Icon: {fileID: 0}
   m_RetryFrequency: 2
   m_isInteruptable: 0
-  m_AbortDuration: 30
+  m_MaximumExecutionTime: 30
+  m_IsBlocking: 1
+  m_OnStartEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnEndEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnStart: {fileID: 0}
+  m_OnPrepare: {fileID: 0}
+  m_OnPerformAction: []
+  m_OnFinalize: {fileID: 0}
+  m_OnEnd: {fileID: 0}
+  m_NextBehaviour: {fileID: 0}
+  m_WeightMultiplier: 1
+  m_WeightVariation: 0.1
+  m_RequiredSenses: []
   m_RequiredStats:
   - statTemplate: {fileID: 11400000, guid: 4efea187304c1a04581b1f0b8cc341cf, type: 2}
     objective: 2
@@ -835,6 +887,8 @@ MonoBehaviour:
   m_DesiredStateImpacts:
   - statTemplate: {fileID: 11400000, guid: 4efea187304c1a04581b1f0b8cc341cf, type: 2}
     objective: 0
+  m_RequiredWorldState: []
+  CurrentState: 5
   awarenessRange: 100
 --- !u!114 &2332644279983961303
 MonoBehaviour:
@@ -850,11 +904,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Description: 
   m_DisplayName: Sleep
-  m_OnStartCue: {fileID: 0}
-  m_OnEndCue: {fileID: 0}
+  Icon: {fileID: 0}
   m_RetryFrequency: 2
   m_isInteruptable: 0
-  m_AbortDuration: 30
+  m_MaximumExecutionTime: 30
+  m_IsBlocking: 1
+  m_OnStartEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnEndEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnStart: {fileID: 0}
+  m_OnPrepare: {fileID: 0}
+  m_OnPerformAction: []
+  m_OnFinalize: {fileID: 0}
+  m_OnEnd: {fileID: 0}
+  m_NextBehaviour: {fileID: 0}
+  m_WeightMultiplier: 1
+  m_WeightVariation: 0.1
+  m_RequiredSenses: []
   m_RequiredStats:
   - statTemplate: {fileID: 11400000, guid: 1134128b230d7734dad1c54314c6d317, type: 2}
     objective: 0
@@ -863,6 +932,8 @@ MonoBehaviour:
   m_DesiredStateImpacts:
   - statTemplate: {fileID: 11400000, guid: 1134128b230d7734dad1c54314c6d317, type: 2}
     objective: 2
+  m_RequiredWorldState: []
+  CurrentState: 5
   awarenessRange: 50
 --- !u!114 &2093279812822493519
 MonoBehaviour:
@@ -878,11 +949,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Description: 
   m_DisplayName: Sell Raw Food
-  m_OnStartCue: {fileID: 0}
-  m_OnEndCue: {fileID: 0}
+  Icon: {fileID: 0}
   m_RetryFrequency: 2
   m_isInteruptable: 0
-  m_AbortDuration: 30
+  m_MaximumExecutionTime: 30
+  m_IsBlocking: 1
+  m_OnStartEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnEndEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnStart: {fileID: 0}
+  m_OnPrepare: {fileID: 0}
+  m_OnPerformAction: []
+  m_OnFinalize: {fileID: 0}
+  m_OnEnd: {fileID: 0}
+  m_NextBehaviour: {fileID: 0}
+  m_WeightMultiplier: 1
+  m_WeightVariation: 0.1
+  m_RequiredSenses: []
   m_RequiredStats:
   - statTemplate: {fileID: 11400000, guid: cf9e8ec2f416536438ba755bec4df9d6, type: 2}
     objective: 2
@@ -893,6 +979,8 @@ MonoBehaviour:
     objective: 2
   - statTemplate: {fileID: 11400000, guid: cf9e8ec2f416536438ba755bec4df9d6, type: 2}
     objective: 0
+  m_RequiredWorldState: []
+  CurrentState: 5
   awarenessRange: 60
 --- !u!114 &6253569233166842538
 MonoBehaviour:
@@ -908,11 +996,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Description: 
   m_DisplayName: Buy Raw Food
-  m_OnStartCue: {fileID: 0}
-  m_OnEndCue: {fileID: 0}
+  Icon: {fileID: 0}
   m_RetryFrequency: 2
   m_isInteruptable: 0
-  m_AbortDuration: 30
+  m_MaximumExecutionTime: 30
+  m_IsBlocking: 1
+  m_OnStartEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnEndEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnStart: {fileID: 0}
+  m_OnPrepare: {fileID: 0}
+  m_OnPerformAction: []
+  m_OnFinalize: {fileID: 0}
+  m_OnEnd: {fileID: 0}
+  m_NextBehaviour: {fileID: 0}
+  m_WeightMultiplier: 1
+  m_WeightVariation: 0.1
+  m_RequiredSenses: []
   m_RequiredStats:
   - statTemplate: {fileID: 11400000, guid: be586581a85615540afb94067ec131a2, type: 2}
     objective: 2
@@ -923,6 +1026,8 @@ MonoBehaviour:
     objective: 2
   - statTemplate: {fileID: 11400000, guid: be586581a85615540afb94067ec131a2, type: 2}
     objective: 0
+  m_RequiredWorldState: []
+  CurrentState: 5
   awarenessRange: 60
 --- !u!114 &5153980171199940020
 MonoBehaviour:
@@ -938,11 +1043,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Description: 
   m_DisplayName: Learn
-  m_OnStartCue: {fileID: 0}
-  m_OnEndCue: {fileID: 0}
+  Icon: {fileID: 0}
   m_RetryFrequency: 2
   m_isInteruptable: 0
-  m_AbortDuration: 30
+  m_MaximumExecutionTime: 30
+  m_IsBlocking: 1
+  m_OnStartEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnEndEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnStart: {fileID: 0}
+  m_OnPrepare: {fileID: 0}
+  m_OnPerformAction: []
+  m_OnFinalize: {fileID: 0}
+  m_OnEnd: {fileID: 0}
+  m_NextBehaviour: {fileID: 0}
+  m_WeightMultiplier: 1
+  m_WeightVariation: 0.1
+  m_RequiredSenses: []
   m_RequiredStats:
   - statTemplate: {fileID: 11400000, guid: 3091b91fc8dcd26428dac24f52b6116e, type: 2}
     objective: 0
@@ -951,6 +1071,8 @@ MonoBehaviour:
   m_DesiredStateImpacts:
   - statTemplate: {fileID: 11400000, guid: 3091b91fc8dcd26428dac24f52b6116e, type: 2}
     objective: 2
+  m_RequiredWorldState: []
+  CurrentState: 5
   awarenessRange: 20
 --- !u!114 &8910098895151388150
 MonoBehaviour:
@@ -966,11 +1088,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Description: 
   m_DisplayName: Socialize
-  m_OnStartCue: {fileID: 0}
-  m_OnEndCue: {fileID: 0}
+  Icon: {fileID: 0}
   m_RetryFrequency: 2
   m_isInteruptable: 0
-  m_AbortDuration: 30
+  m_MaximumExecutionTime: 30
+  m_IsBlocking: 1
+  m_OnStartEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnEndEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnStart: {fileID: 0}
+  m_OnPrepare: {fileID: 0}
+  m_OnPerformAction: []
+  m_OnFinalize: {fileID: 0}
+  m_OnEnd: {fileID: 0}
+  m_NextBehaviour: {fileID: 0}
+  m_WeightMultiplier: 1
+  m_WeightVariation: 0.1
+  m_RequiredSenses: []
   m_RequiredStats:
   - statTemplate: {fileID: 11400000, guid: be586581a85615540afb94067ec131a2, type: 2}
     objective: 2
@@ -979,6 +1116,8 @@ MonoBehaviour:
   m_DesiredStateImpacts:
   - statTemplate: {fileID: 11400000, guid: e7d5ac7f90040d04b892ec7dda97749d, type: 2}
     objective: 2
+  m_RequiredWorldState: []
+  CurrentState: 5
   awarenessRange: 30
 --- !u!114 &8116206359505029520
 MonoBehaviour:
@@ -994,11 +1133,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Description: 
   m_DisplayName: Work
-  m_OnStartCue: {fileID: 0}
-  m_OnEndCue: {fileID: 0}
+  Icon: {fileID: 0}
   m_RetryFrequency: 2
   m_isInteruptable: 0
-  m_AbortDuration: 30
+  m_MaximumExecutionTime: 30
+  m_IsBlocking: 1
+  m_OnStartEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnEndEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnStart: {fileID: 0}
+  m_OnPrepare: {fileID: 0}
+  m_OnPerformAction: []
+  m_OnFinalize: {fileID: 0}
+  m_OnEnd: {fileID: 0}
+  m_NextBehaviour: {fileID: 0}
+  m_WeightMultiplier: 1
+  m_WeightVariation: 0.1
+  m_RequiredSenses: []
   m_RequiredStats:
   - statTemplate: {fileID: 11400000, guid: be586581a85615540afb94067ec131a2, type: 2}
     objective: 0
@@ -1010,6 +1164,8 @@ MonoBehaviour:
   m_DesiredStateImpacts:
   - statTemplate: {fileID: 11400000, guid: be586581a85615540afb94067ec131a2, type: 2}
     objective: 2
+  m_RequiredWorldState: []
+  CurrentState: 5
   awarenessRange: 20
 --- !u!114 &5153980171199940022
 MonoBehaviour:
@@ -1025,14 +1181,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Description: 
   m_DisplayName: Wander
-  m_OnStartCue: {fileID: 0}
-  m_OnEndCue: {fileID: 0}
+  Icon: {fileID: 0}
   m_RetryFrequency: 2
   m_isInteruptable: 1
-  m_AbortDuration: 30
+  m_MaximumExecutionTime: 30
+  m_IsBlocking: 1
+  m_OnStartEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnEndEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnStart: {fileID: 0}
+  m_OnPrepare: {fileID: 0}
+  m_OnPerformAction: []
+  m_OnFinalize: {fileID: 0}
+  m_OnEnd: {fileID: 0}
+  m_NextBehaviour: {fileID: 0}
+  m_WeightMultiplier: 1
+  m_WeightVariation: 0.1
+  m_RequiredSenses: []
   m_RequiredStats: []
   m_CharacterInfluences: []
   m_DesiredStateImpacts: []
+  m_RequiredWorldState: []
+  CurrentState: 5
   minTimeBetweenRandomPathChanges: 7
   maxTimeBetweenRandomPathChanges: 20
   minDistanceOfRandomPathChange: 50
@@ -1364,6 +1537,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7588304403786239542, guid: f08bda8b5926d0c43b6e8c1eb6837497,
         type: 3}
+      propertyPath: m_RootOrder
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7588304403786239542, guid: f08bda8b5926d0c43b6e8c1eb6837497,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -1379,6 +1557,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7588304403786239542, guid: f08bda8b5926d0c43b6e8c1eb6837497,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7588304403786239542, guid: f08bda8b5926d0c43b6e8c1eb6837497,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
@@ -1391,16 +1574,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7588304403786239542, guid: f08bda8b5926d0c43b6e8c1eb6837497,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7588304403786239542, guid: f08bda8b5926d0c43b6e8c1eb6837497,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7588304403786239542, guid: f08bda8b5926d0c43b6e8c1eb6837497,
         type: 3}
