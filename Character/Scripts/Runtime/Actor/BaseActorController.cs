@@ -209,20 +209,6 @@ namespace WizardsCode.Character
             }
         }
 
-        /// <summary>
-        /// If this actor is currently preparing to, or actively interacting with an object this transform is the point at which they should be standing.
-        /// </summary>
-        public Transform InteractionPoint
-        {
-            get
-            {
-                return m_InteractionPoint;
-            }
-            set
-            {
-                m_InteractionPoint = value;
-            }
-        }
 
         /// <summary>
         /// Stop the actor from moving. Clearing the current path if there is one.

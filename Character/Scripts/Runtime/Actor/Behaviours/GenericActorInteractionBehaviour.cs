@@ -18,6 +18,7 @@ namespace WizardsCode.Character.AI
     /// </summary>
     public class GenericActorInteractionBehaviour : AbstractAIBehaviour
     {
+        #region Inspector Properties
         [Header("Actor Interaction Config")]
         [SerializeField, Tooltip("If consent is required then the interaction will only start when enough actors have consented to participate. So, for example, a conversation will require consent but an attack will not.")]
         bool m_RequireConsent = true;
@@ -33,6 +34,7 @@ namespace WizardsCode.Character.AI
         float m_CooldownDuration = 60;
         [SerializeField, NavMeshAreaMask, Tooltip("The area mask that indicates NavMesh areas that this interaction can take place.")]
         public int m_NavMeshMask = NavMesh.AllAreas;
+        #endregion
 
         float m_CooldownEndTime = float.MinValue;
         private float m_Duration;
@@ -105,10 +107,6 @@ namespace WizardsCode.Character.AI
                 return;
             }
 
-            Vector3 lookTarget = m_InteractionPoint;
-            lookTarget.y = Brain.Actor.transform.position.y;
-            Brain.Actor.transform.LookAt(lookTarget);
-
             // at the time of writing this comment we don't support adding participants during an interaction, this is here to accomodate for that when we do support it
             if (participants.Count > m_MaxGroupSize)
             {
@@ -140,7 +138,7 @@ namespace WizardsCode.Character.AI
         {
             get
             {
-                return Vector3.SqrMagnitude(Brain.Actor.MoveTargetPosition - m_InteractionPoint) < 0.25f;
+                return (Brain.Actor.MoveTargetPosition - transform.position).sqrMagnitude < 1f;
             }
         }
 
@@ -200,6 +198,15 @@ namespace WizardsCode.Character.AI
 
         protected Vector3 m_InteractionPoint;
         protected Vector3 m_InteractionGroupCenter;
+
+        protected override State CheckEnvironment()
+        {
+            if (!IsAtInteractionPoint)
+            {
+                return State.Starting;
+            }
+            return base.CheckEnvironment();
+        }
 
         protected virtual void UpdateInteractionPosition(bool setOnNavMesh)
         {
@@ -261,7 +268,7 @@ namespace WizardsCode.Character.AI
                 EndTime = FinishBehaviour();
                 return;
             }
-            Brain.Actor.InteractionPoint.position = m_InteractionPoint;
+            Brain.Actor.MoveTargetPosition = m_InteractionPoint;
 
             // If we are too far away set start moving and set the callback to perform the action when arriving
             if (Vector3.SqrMagnitude(Brain.Actor.MoveTargetPosition - m_InteractionPoint) > m_SqrArrivingDistance)

@@ -15,6 +15,7 @@ namespace WizardsCode.Stats {
         , IDebug
 #endif
     {
+        #region Inspector Parameters
         [Header("Behaviour Manager")]
         [SerializeField, Tooltip("The % variation to create in timing of updates. This is used to ensure that actors using the same AI do not make decisions at precisely the same time. The time of each update will be increased or decreased by a random % between 0 and this value.")]
         [Range(0, 1)]
@@ -32,6 +33,7 @@ namespace WizardsCode.Stats {
         Sprite m_DefaultIcon;
         [SerializeField, Tooltip("The icon to use when there is an active blocking behaviour, but that behaviour does not have an icon.")]
         Sprite m_MissingIcon;
+        #endregion
 
         /// <summary>
         /// Set whether or not this brain is active. If not active no decisions will be made and no attempt to control the character will take place.

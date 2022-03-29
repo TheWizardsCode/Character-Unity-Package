@@ -418,7 +418,7 @@ namespace WizardsCode.Character
         {   
             if (CurrentState == State.Starting)
             {
-                CuePrepare();
+                CurrentState = CheckEnvironment();
                 return;
             }
 
@@ -480,10 +480,12 @@ namespace WizardsCode.Character
             }
         }
 
-        private void CuePrepare()
+        /// <summary>
+        /// Check the environment and the character to ensure that
+        /// this behaviour can be carried out. 
+        /// </summary>
+        protected virtual State CheckEnvironment()
         {
-            CurrentState = State.Preparing;
-
             if (m_OnPrepareCue)
             {
                 Brain.Actor.Prompt(m_OnPrepareCue);
@@ -495,6 +497,7 @@ namespace WizardsCode.Character
             }
 
             OnPrepareCue();
+            return State.Preparing; ;
         }
 
         /// <summary>

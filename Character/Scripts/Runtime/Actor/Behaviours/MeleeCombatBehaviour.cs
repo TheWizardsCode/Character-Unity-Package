@@ -49,26 +49,22 @@ namespace WizardsCode.Character.AI
                     attempt++;
                     target = participants[Random.Range(0, participants.Count)];
                 }
+                if (target == Brain)
+                {
+                    return;
+                }
             }
 
-            Vector3 direction = (transform.position - target.transform.position);
-            m_InteractionPoint = target.transform.position + (direction.normalized * m_OptimalAttackRange);
+            Vector3 direction = (target.transform.position - transform.position).normalized;
+            Vector3 offset = direction * m_OptimalAttackRange;
+            m_InteractionPoint = target.transform.position - offset;
             m_InteractionGroupCenter = m_InteractionPoint;
 
-            Brain.Actor.InteractionPoint.position = m_InteractionPoint;
-            
-            // If we are too far away set start moving and set the callback to perform the action when arriving
-            if (Vector3.SqrMagnitude(Brain.Actor.MoveTargetPosition - m_InteractionPoint) > m_SqrArrivingDistance)
-            {
-                Brain.Actor.MoveTo(m_InteractionPoint,
-                    () =>
-                    {
-                        CurrentState = State.Preparing;
-                    },
+            Brain.Actor.MoveTo(m_InteractionPoint,
+                    null,
                     null,
                     null
                 );
-            }
         }
     }
 }
