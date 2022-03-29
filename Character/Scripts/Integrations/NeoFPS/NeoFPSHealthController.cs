@@ -163,7 +163,10 @@ namespace WizardsCode.Character.Intergration
 
             if (!IsAlive)
             {
-                onIsAliveChanged.Invoke(IsAlive);
+                if (onIsAliveChanged == null)
+                {
+                    onIsAliveChanged.Invoke(IsAlive);
+                }
             }
         }
     }

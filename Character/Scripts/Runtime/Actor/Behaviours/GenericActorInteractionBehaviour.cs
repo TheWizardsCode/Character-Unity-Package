@@ -40,7 +40,7 @@ namespace WizardsCode.Character.AI
         private bool m_IsHandshaking = false;
         internal List<StatsTracker> participants = new List<StatsTracker>();
         private NavMeshAgent m_Agent;
-        private float m_SqrArrivingDistance;
+        protected float m_SqrArrivingDistance;
 
         private string InteractionPointName { get; set; }
 
@@ -198,10 +198,10 @@ namespace WizardsCode.Character.AI
             }
         }
 
-        Vector3 m_InteractionPoint;
-        Vector3 m_InteractionGroupCenter;
+        protected Vector3 m_InteractionPoint;
+        protected Vector3 m_InteractionGroupCenter;
 
-        private void UpdateInteractionPosition(bool setOnNavMesh)
+        protected virtual void UpdateInteractionPosition(bool setOnNavMesh)
         {
             // Find a point where we will meet the actors to interact
             float totalX = 0;
