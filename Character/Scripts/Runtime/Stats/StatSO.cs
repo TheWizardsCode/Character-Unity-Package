@@ -28,6 +28,8 @@ namespace WizardsCode.Stats
         [SerializeField, Tooltip("The speed (lower is faster) at which this stat moved towards the base value if there are no other effects at play.")]
         float m_SpeedToBaseValue = 5;
 
+        public StatChangedEvent onValueChanged = new StatChangedEvent();
+
         [HideInInspector, SerializeField]
         float m_CurrentNormalizedValue;
 
@@ -36,8 +38,6 @@ namespace WizardsCode.Stats
             get { return m_DisplayName; }
             set { m_DisplayName = value; }
         }
-
-        public StatChangedEvent onValueChanged = new StatChangedEvent();
 
         public float MinValue
         {
@@ -72,13 +72,17 @@ namespace WizardsCode.Stats
 
         /// <summary>
         /// Get the current absolute value of this stat. If an attempt is made to set the value 
-        /// outside the allowable range (0 to 1) then the value will
+        /// outside the allowable range then the value will
         /// be clamped.
         /// </summary>
         public float Value
         {
-            get { return ((MaxValue - MinValue) * NormalizedValue) + MinValue; }
-            set { NormalizedValue = (value - MinValue) / (MaxValue - MinValue); }
+            get { 
+                return ((MaxValue - MinValue) * NormalizedValue) + MinValue; 
+            }
+            set {
+                NormalizedValue = (value - MinValue) / (MaxValue - MinValue); 
+            }
         }
 
         /// <summary>

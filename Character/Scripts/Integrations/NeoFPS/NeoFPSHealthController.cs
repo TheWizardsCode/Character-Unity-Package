@@ -2,19 +2,30 @@
 using NeoFPS;
 using NeoSaveGames;
 using NeoSaveGames.Serialization;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using WizardsCode.Character.Stats;
+using WizardsCode.Stats;
+using static NeoFPS.BasicHealthManager;
 
 namespace WizardsCode.Character.Intergration 
 {
-    public class NeoFPSHealthController : HealthController, IHealthManager, INeoSerializableComponent
+    /// <summary>
+    /// Bridges between a Neo FPS Health Manager and a Wizards Code Character Stats Tracker.
+    /// 
+    /// Place this on an AI instead of a NeoFPS Health Manager so that the it takes damage from the Neo FPS damage system.
+    /// </summary>
+    public class NeoFPSHealthController
+        : HealthController, IHealthManager, INeoSerializableComponent
     {
-        protected override void OnHealthChanged(float normalizedDelta)
-        {
-            base.OnHealthChanged(normalizedDelta);
-        }
+        [Tooltip("An event called whenever the health changes")]
+        public event HealthDelegates.OnHealthChanged onHealthChanged;
+        [Tooltip("An event called whenever the alive status of the character changes.")]
+        public event HealthDelegates.OnIsAliveChanged onIsAliveChanged;
+        [Tooltip("An event called whenever the Max Health of the character changes.")]
+        public event HealthDelegates.OnHealthMaxChanged onHealthMaxChanged;
 
         /// <summary>
         /// NeoFPS paramater, pass through to WizardsCode Health Controller
@@ -49,19 +60,6 @@ namespace WizardsCode.Character.Intergration
         }
 
         /// <summary>
-        /// NeoFPS events, pass through to WizardsCode Health Controller
-        /// </summary>
-        public event HealthDelegates.OnIsAliveChanged onIsAliveChanged;
-        /// <summary>
-        /// NeoFPS events, pass through to WizardsCode Health Controller
-        /// </summary>
-        public event HealthDelegates.OnHealthChanged onHealthChanged;
-        /// <summary>
-        /// NeoFPS events, pass through to WizardsCode Health Controller
-        /// </summary>
-        public event HealthDelegates.OnHealthMaxChanged onHealthMaxChanged;
-
-        /// <summary>
         /// NeoFPS method, pass through to appropriate WizardsCode method
         /// </summary>
         /// <param name="damage"></param>
@@ -78,7 +76,7 @@ namespace WizardsCode.Character.Intergration
         /// <param name="damage"></param>
         public void AddDamage(float damage, bool critical)
         {
-            AddDamage(damage);
+            TakeDamage(damage);
         }
 
         /// <summary>
@@ -88,7 +86,7 @@ namespace WizardsCode.Character.Intergration
         /// <param name="damage"></param>
         public void AddDamage(float damage, IDamageSource source)
         {
-            AddDamage(damage);
+            TakeDamage(damage);
         }
 
         /// <summary>
@@ -98,7 +96,7 @@ namespace WizardsCode.Character.Intergration
         /// <param name="damage"></param>
         public void AddDamage(float damage, bool critical, RaycastHit hit)
         {
-            AddDamage(damage);
+            TakeDamage(damage);
         }
 
         /// <summary>
@@ -108,7 +106,7 @@ namespace WizardsCode.Character.Intergration
         /// <param name="damage"></param>
         public void AddDamage(float damage, bool critical, IDamageSource source)
         {
-            AddDamage(damage);
+            TakeDamage(damage);
         }
 
         /// <summary>
@@ -118,7 +116,7 @@ namespace WizardsCode.Character.Intergration
         /// <param name="damage"></param>
         public void AddDamage(float damage, bool critical, IDamageSource source, RaycastHit hit)
         {
-            AddDamage(damage);
+            TakeDamage(damage);
         }
 
         /// <summary>
@@ -155,6 +153,18 @@ namespace WizardsCode.Character.Intergration
         public void WriteProperties(INeoSerializer writer, NeoSerializedGameObject nsgo, SaveMode saveMode)
         {
             throw new System.NotImplementedException();
+        }
+
+        protected override void OnHealthChanged(float oldValue)
+        {
+            if (onHealthChanged != null)
+                onHealthChanged(oldValue, Health, false, null);
+            base.OnHealthChanged(oldValue);
+
+            if (!IsAlive)
+            {
+                onIsAliveChanged.Invoke(IsAlive);
+            }
         }
     }
 }

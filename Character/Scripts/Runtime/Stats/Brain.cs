@@ -383,6 +383,46 @@ namespace WizardsCode.Stats {
             Log(log.ToString());
         }
 
+        protected override void UpdateBehaviours(StateSO state, bool isSatisfied)
+        {
+            Transform behaviourT;
+            string behaviourName;
+
+            for (int idx = 0; idx < state.SatisfiedBehaviours.Count; idx++)
+            {
+                behaviourName = $"{state.SatisfiedBehaviours[idx].DisplayName} behaviours from satisfied desired state {state.name}";
+                // OPTIMIZATION can we avoid Find?
+                behaviourT = transform.Find(behaviourName);
+
+                if (isSatisfied && behaviourT == null)
+                {
+                    // OPTIMIZATION use a pool
+                    Instantiate(state.SatisfiedBehaviours[idx].gameObject, transform).name = behaviourName;
+                }
+                else if (!isSatisfied && behaviourT != null)
+                {
+                    Destroy(behaviourT.gameObject);
+                }
+            }
+
+            for (int idx = 0; idx < state.UnsatisfiedBehaviours.Count; idx++)
+            {
+                behaviourName = state.UnsatisfiedBehaviours[idx].DisplayName + " behaviours from unsatisfied desired state " + state.name;
+                // OPTIMIZATION can we avoid Find?
+                behaviourT = transform.Find(behaviourName);
+
+                if (!isSatisfied && behaviourT == null)
+                {
+                    // OPTIMIZATION use a pool
+                    Instantiate(state.UnsatisfiedBehaviours[idx].gameObject, transform).name = behaviourName;
+                }
+                else if (isSatisfied && behaviourT != null)
+                {
+                    Destroy(behaviourT.gameObject);
+                }
+            }
+        }
+
         /// <summary>
         /// This actor will prioritize the named behaviour over all others. Under normal
         /// circumstances this means the behaviour will be actioned as soon as possible.

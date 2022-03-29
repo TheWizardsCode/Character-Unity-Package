@@ -24,18 +24,23 @@ namespace WizardsCode.Character.Stats
         string m_DeathTriggerName = "Die";
 
         protected StatSO m_Health;
-        Brain m_Controller;
+        StatsTracker m_Controller;
         int deathTriggerID;
 
-        public bool IsAlive {  get { return m_Health.Value > 0; } }
+        public bool IsAlive {  
+            get { 
+                // TODO: Remove this hacky fix for a race condition in which this gets called in Neo FPS BaseCharacter OnEnable
+                return m_Health == null ? true : m_Health.Value > 0; 
+            } 
+        }
         public float Health { 
             get { return m_Health.Value; } 
             set { m_Health.Value = value; }
         }
 
-        private void Start()
+        private void Awake()
         {
-            m_Controller = GetComponentInChildren<Brain>();
+            m_Controller = GetComponentInChildren<StatsTracker>();
 
             m_Health = m_Controller.GetOrCreateStat(healthTemplate, 1);
             m_Health.onValueChanged.AddListener(OnHealthChanged);
@@ -68,12 +73,12 @@ namespace WizardsCode.Character.Stats
         /// <param name="amount">The damage to be applied.</param>
         public void TakeDamage(float amount)
         {
-            m_Health.Value -= amount;
+            SetHitPoints(m_Health.Value - amount);
         }
 
-        protected virtual void OnHealthChanged(float normalizedDelta)
+        protected virtual void OnHealthChanged(float oldValue)
         {
-            if (m_Animator != null && m_Health.NormalizedValue == 0)
+            if (m_Animator != null && m_Health.NormalizedValue <= 0)
             {
                 m_Animator.SetTrigger(deathTriggerID);
 
@@ -94,7 +99,5 @@ namespace WizardsCode.Character.Stats
                 }
             }
         }
-
-
     }
 }

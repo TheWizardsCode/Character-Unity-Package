@@ -29,6 +29,7 @@ namespace WizardsCode.Stats {
         [HideInInspector, SerializeField]
         internal List<StatInfluencerSO> m_StatsInfluencers = new List<StatInfluencerSO>();
 
+        protected float interactionOffset = 0.5f;
         internal float m_TimeOfNextUpdate = 0;
         private List<StateSO> m_UnsatisfiedDesiredStatesCache = new List<StateSO>();
         private Interactable m_TargetInteractable;
@@ -76,7 +77,6 @@ namespace WizardsCode.Stats {
             }
         }
 
-        protected float interactionOffset = 0.5f;
         /// <summary>
         /// Return an available interaction position for this brain.
         /// </summary>
@@ -109,7 +109,7 @@ namespace WizardsCode.Stats {
 
             UpdateAllStats();
             ApplyStatInfluencerEffects();
-            UpdateDesiredStatesList();
+            UpdateDesiredStates();
 
             m_TimeOfNextUpdate = Time.timeSinceLevelLoad + m_TimeBetweenUpdates;
         }
@@ -151,12 +151,10 @@ namespace WizardsCode.Stats {
         /// Iterates over all the desired stated and checks to see if they are currently satisified.
         /// Apply any influencers that are needed and cache unsatisfied states are caches in `UnsatisfiedStates`.
         /// </summary>
-        private void UpdateDesiredStatesList()
+        protected void UpdateDesiredStates()
         {
             List<StatInfluencerSO> influencers = new List<StatInfluencerSO>();
-            List<AbstractAIBehaviour> satisfiedBehaviours = new List<AbstractAIBehaviour>();
-            List<AbstractAIBehaviour> unsatisfiedBehaviours = new List<AbstractAIBehaviour>();
-            bool isSatisfied;
+
             UnsatisfiedDesiredStates.Clear();
 
             if (DesiredStates == null) return;
@@ -166,60 +164,30 @@ namespace WizardsCode.Stats {
                 if (DesiredStates[i].IsSatisfiedFor(this))
                 {
                     influencers = DesiredStates[i].InfluencersToApplyWhenInDesiredState;
-                    isSatisfied = true;
+                    UpdateBehaviours(DesiredStates[i], true);
                 }
                 else
                 {
                     influencers = DesiredStates[i].InfluencersToApplyWhenNotInDesiredState;
                     UnsatisfiedDesiredStates.Add(DesiredStates[i]);
-                    isSatisfied = false;
+                    UpdateBehaviours(DesiredStates[i], false);
                 }
 
                 for (int idx = 0; idx < influencers.Count; idx++)
                 {
                     TryAddInfluencer(ScriptableObject.Instantiate(influencers[idx]));
                 }
-
-
-                satisfiedBehaviours = DesiredStates[i].SatisfiedBehaviours;
-                unsatisfiedBehaviours = DesiredStates[i].UnsatisfiedBehaviours;
-                Transform behaviourT;
-                string behaviourName;
-
-                for (int idx = 0; idx < satisfiedBehaviours.Count; idx++)
-                {
-                    behaviourName = satisfiedBehaviours[idx].DisplayName + " behaviours from satisfied desired state " + DesiredStates[i].name;
-                    // OPTIMIZATION can we avoid Find?
-                    behaviourT = transform.Find(behaviourName);
-
-                    if (isSatisfied && behaviourT == null)
-                    {   
-                        // OPTIMIZATION use a pool
-                        Instantiate(satisfiedBehaviours[idx].gameObject, transform).name = behaviourName;
-                    } else if (!isSatisfied && behaviourT != null)
-                    {
-                        Destroy(behaviourT.gameObject);
-                    }
-                }
-
-                for (int idx = 0; idx < unsatisfiedBehaviours.Count; idx++)
-                {
-                    behaviourName = unsatisfiedBehaviours[idx].DisplayName + " behaviours from unsatisfied desired state " + DesiredStates[i].name;
-                    // OPTIMIZATION can we avoid Find?
-                    behaviourT = transform.Find(behaviourName);
-
-                    if (!isSatisfied && behaviourT == null)
-                    {
-                        // OPTIMIZATION use a pool
-                        Instantiate(unsatisfiedBehaviours[idx].gameObject, transform).name = behaviourName;
-                    }
-                    else if (isSatisfied && behaviourT != null)
-                    {
-                        Destroy(behaviourT.gameObject);
-                    }
-                }
             }
         }
+
+        /// <summary>
+        /// Update the available behaviours based on the current satisfied or
+        /// otherwise status of a DesiredState. Note that for the most part this will
+        /// only be used in AI's and thus the default behaviour is to do nothing here.
+        /// </summary>
+        /// <param name="state">The state we are updating against</param>
+        /// <param name="isSatisfied">whether or ot the state is satisfied.</param>
+        protected virtual void UpdateBehaviours(StateSO state, bool isSatisfied) { }
 
         /// <summary>
         /// Get a list of stats that are currently outside the desired state for that stat.

@@ -8,6 +8,8 @@ namespace WizardsCode.Character
     {
         #region InspectorParameters
         [Header("Animation")]
+        [SerializeField, Tooltip("Should the character use Root Motion baked into the animations?")]
+        bool m_UseRootMotion = false;
         [SerializeField, Tooltip("The name of the parameter in the animator that sets the forward speed of the character.")]
         private string m_SpeedParameterName = "Forward";
         [SerializeField, Tooltip("The name of the parameter in the animator that sets the turn angle of the character.")]
@@ -20,6 +22,17 @@ namespace WizardsCode.Character
 
         Transform m_LeftFootPosition = default;
         Transform m_RightFootPosition = default;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            Animator animator = GetComponentInChildren<Animator>();
+            if (animator.applyRootMotion != m_UseRootMotion)
+            {
+                Debug.LogWarning($"`{displayName}` does not have a consistent root motion setting in the AnimatorActorController and the Animator. Overriding to `{m_UseRootMotion}` from the AnimatorActorController.");
+                animator.applyRootMotion = m_UseRootMotion;
+            }
+        }
 
         protected override void Update()
         {
