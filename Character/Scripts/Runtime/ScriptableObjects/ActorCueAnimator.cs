@@ -45,7 +45,7 @@ namespace WizardsCode.Character
 
         private void ProcessAnimationLayerWeights()
         {
-            if (m_Actor.Animator != null && m_LayerIndex >= 0)
+            if (m_Actor.Animator != null && !string.IsNullOrEmpty(m_LayerName))
             {
                 m_LayerIndex = m_Actor.Animator.GetLayerIndex(m_LayerName);
                 m_OriginalLayerWeight = m_Actor.Animator.GetLayerWeight(m_LayerIndex);
