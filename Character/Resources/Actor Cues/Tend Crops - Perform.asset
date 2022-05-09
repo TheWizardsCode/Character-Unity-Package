@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Tend Crops - Perform
   m_EditorClassIdentifier: 
   m_Description: Need to look after the crops or we will starve.
-  Duration: 10
+  m_Duration: 9.016667
   markName: 
   m_StopMovement: 0
   audioClip: {fileID: 0}
@@ -21,11 +21,8 @@ MonoBehaviour:
   m_LayerWeight: 1
   m_LayerWeightChangeTime: 0.5
   m_RevertLayerWeight: 0
-  m_AnimationParams:
-  - paramName: Farm
-    paramType: 2
-    paramFloatValue: 0
-    paramIntValue: 0
-    paramBoolValue: 1
+  m_AnimationParams: []
+  m_AnimationClip: {fileID: 7400022, guid: 835b6fabefc571847a740e87da5730f1, type: 3}
+  m_DurationMatchesAnimation: 1
   animationClipName: 
   animationNormalizedTime: 0

@@ -56,12 +56,12 @@ MonoBehaviour:
   m_OnEndEvent:
     m_PersistentCalls:
       m_Calls: []
-  m_OnStartCue: {fileID: 11400000, guid: 634c58f1450fc0246b9c77314a10f9ac, type: 2}
-  m_OnPrepareCue: {fileID: 0}
+  m_OnStartCue: {fileID: 0}
+  m_OnPrepareCue: {fileID: 11400000, guid: 634c58f1450fc0246b9c77314a10f9ac, type: 2}
   m_OnPerformCue:
   - {fileID: 11400000, guid: 26bd48fe13a13194ba541a6423b0e72e, type: 2}
   m_OnFinalizeCue: {fileID: 11400000, guid: d804123e4d7f7ce489c68f4f01d661a4, type: 2}
-  m_OnEndCue: {fileID: 11400000, guid: b17b22eaa64dc9c49936fcd32f7c0a05, type: 2}
+  m_OnEndCue: {fileID: 0}
   m_NextBehaviour: {fileID: 0}
   m_WeightMultiplier: 2.38
   m_WeightVariation: 0.1

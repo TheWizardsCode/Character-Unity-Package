@@ -118,6 +118,7 @@ namespace WizardsCode.Character
                 }
             }
 
+            //TODO Remove the use of animationClipName and replace entirely with AnimationClip
             if (!string.IsNullOrWhiteSpace(animationClipName))
             {
                 m_Actor.Animator.Play(animationClipName, m_LayerIndex, animationNormalizedTime);

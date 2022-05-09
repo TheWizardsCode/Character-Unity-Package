@@ -13,13 +13,16 @@ MonoBehaviour:
   m_Name: Talking - Start
   m_EditorClassIdentifier: 
   m_Description: 
-  Duration: 5
+  m_Duration: 5
   markName: 
   m_StopMovement: 0
   audioClip: {fileID: 0}
   m_LayerName: Talking
   m_LayerWeight: 1
-  m_LayerChangeSpeed: 0.5
+  m_LayerWeightChangeTime: 0.5
+  m_RevertLayerWeight: 0
   m_AnimationParams: []
+  m_AnimationClip: {fileID: 0}
+  m_DurationMatchesAnimation: 1
   animationClipName: 
   animationNormalizedTime: 0
