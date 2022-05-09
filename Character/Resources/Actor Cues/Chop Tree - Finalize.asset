@@ -13,18 +13,16 @@ MonoBehaviour:
   m_Name: Chop Tree - Finalize
   m_EditorClassIdentifier: 
   m_Description: 
-  Duration: 6
+  m_Duration: 5
   markName: 
   m_StopMovement: 0
   audioClip: {fileID: 0}
   m_LayerName: 
   m_LayerWeight: 0
-  m_LayerChangeSpeed: 0
-  m_AnimationParams:
-  - paramName: ChopTree
-    paramType: 2
-    paramFloatValue: 0
-    paramIntValue: 0
-    paramBoolValue: 0
+  m_LayerWeightChangeTime: 0.5
+  m_RevertLayerWeight: 0
+  m_AnimationParams: []
+  m_AnimationClip: {fileID: 7400036, guid: a064f444c03b0054383217e118523e8d, type: 3}
+  m_DurationMatchesAnimation: 1
   animationClipName: 
   animationNormalizedTime: 0

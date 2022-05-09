@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Eat (Sitting on Ground)  - Prepare
   m_EditorClassIdentifier: 
   m_Description: 
-  Duration: 5
+  m_Duration: 5
   markName: 
   m_StopMovement: 0
   audioClip: {fileID: 0}
@@ -21,17 +21,8 @@ MonoBehaviour:
   m_LayerWeight: 1
   m_LayerWeightChangeTime: 0.5
   m_RevertLayerWeight: 0
-  m_AnimationParams:
-  - paramName: Action
-    paramType: 2
-    paramFloatValue: 0
-    paramIntValue: 0
-    paramBoolValue: 1
-  - paramName: Eating
-    paramType: 2
-    paramFloatValue: 0
-    paramIntValue: 0
-    paramBoolValue: 1
-  m_AnimationClip: {fileID: 7400000, guid: 0979775b6d5911b4989ed32c35fee5d1, type: 2}
+  m_AnimationParams: []
+  m_AnimationClip: {fileID: 7400028, guid: 6a3e767156412e0418b4f1f1f7ae3291, type: 3}
+  m_DurationMatchesAnimation: 1
   animationClipName: 
   animationNormalizedTime: 0

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 335506291277d6e4093c10c51e9a20df, type: 3}
-  m_Name: Eat Standing - Perform
+  m_Name: Chop Tree - Start
   m_EditorClassIdentifier: 
   m_Description: 
   m_Duration: 5
@@ -18,11 +18,11 @@ MonoBehaviour:
   m_StopMovement: 0
   audioClip: {fileID: 0}
   m_LayerName: 
-  m_LayerWeight: 1
+  m_LayerWeight: 0
   m_LayerWeightChangeTime: 0.5
   m_RevertLayerWeight: 0
   m_AnimationParams: []
-  m_AnimationClip: {fileID: 7400034, guid: 835b6fabefc571847a740e87da5730f1, type: 3}
+  m_AnimationClip: {fileID: 7400032, guid: a064f444c03b0054383217e118523e8d, type: 3}
   m_DurationMatchesAnimation: 1
   animationClipName: 
   animationNormalizedTime: 0
