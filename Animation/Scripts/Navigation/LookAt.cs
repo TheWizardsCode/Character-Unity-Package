@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace WizardsCode.Animation
+namespace WizardsCode.AnimationControl
 {
     /// <summary>
     /// Look At a point of interest using the Animator LookAt API.

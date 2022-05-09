@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using WizardsCode.Character;
 using WizardsCode.Stats;
 using UnityEditor;
+using UnityEngine.AI;
 
 namespace WizardsCode.Character
 {
@@ -38,9 +39,16 @@ namespace WizardsCode.Character
 
             m_Interactable = interactable;
 
-            m_OnPerformCue = new ActorCue[] { m_Interactable.m_ActorPerformCue };
-
             base.StartBehaviour();
+        }
+
+        protected override void OnUpdate()
+        {
+            if (CurrentState == State.Preparing)
+            {
+                Brain.Actor.TurnToFace(m_Interactable.transform.position);
+            }
+            base.OnUpdate();
         }
 
         public override bool IsAvailable
@@ -102,6 +110,7 @@ namespace WizardsCode.Character
         /// Updates the cache of interractables in the area and from memory that can be used by this
         /// behaviour. Only interactables that have the desired influences on the actor are returned.
         /// </summary>
+        // OPTIMIZATION: make this a coroutine as it could be costly and we therefore shouldn't block on it
         private void UpdateAvailableInteractablesCache()
         {
             cachedAvailableInteractables.Clear();
@@ -118,26 +127,49 @@ namespace WizardsCode.Character
                 }
             }
 
-            if (Memory != null)
+            if (cachedAvailableInteractables.Count ==0 && Memory != null)
             {
                 //TODO rather than get all memories and then test for DesiredStateImpact add a method to do it in one pass
-                MemorySO[] memories = Memory.GetAllMemoriesAboutInteractables(awarenessRange * 5);
+                MemorySO[] memories = Memory.GetAllMemories(awarenessRange * 5);
                 Interactable interactable;
                 for (int i = 0; i < memories.Length; i++)
                 {
-                    interactable = memories[i].about.GetComponentInChildren<Interactable>();
-                    reasoning.Append("I remember ");
-                    reasoning.Append(interactable.DisplayName);
-
-                    //TODO if memory is of an already cached interactable we can skip
-
-                    if (IsValidInteractable(interactable))
+                    if (memories[i].about)
                     {
-                        cachedAvailableInteractables.Add(interactable);
-                        reasoning.AppendLine(" is near here, that's a good place.");
+                        interactable = memories[i].about.GetComponentInChildren<Interactable>();
+
+                        reasoning.Append("I remember ");
+                        reasoning.Append(interactable.DisplayName);
+
+                        //TODO if memory is of an already cached interactable we can skip
+
+                        if (IsValidInteractable(interactable))
+                        {
+                            cachedAvailableInteractables.Add(interactable);
+                            reasoning.AppendLine(" is near here, that's a good place.");
+                        }
+                        else
+                        {
+                            reasoning.AppendLine(" is near here, but it's not a suitable place.");
+                        }
                     } else
                     {
-                        reasoning.AppendLine(" is near here, but it's not a suitable place.");
+                        List<Interactable> interactables = GetInteractiablesNear(memories[i].position, awarenessRange);
+                        if (interactables.Count > 0)
+                        {
+                            for (int y = 0; y < interactables.Count; y++)
+                            {
+                                if (IsValidInteractable(interactables[y]))
+                                {
+                                    cachedAvailableInteractables.Add(interactables[y]);
+                                    reasoning.AppendLine(" is near here, and it was a suitable place before, maybe it is now.");
+                                }
+                            }
+                        } 
+                        else
+                        {
+                            reasoning.AppendLine(" is near here, but I don't think there is anything left for me there.");
+                        }
                     }
                 }
             }
@@ -180,7 +212,14 @@ namespace WizardsCode.Character
                 return false;
             }
 
-            reasoning.AppendLine("Looks like they have space as well as what I need.");
+            NavMeshPath path = new NavMeshPath();
+            if (!NavMesh.CalculatePath(m_ActorController.transform.position, interactable.transform.position, NavMesh.AllAreas, path))
+            {
+                reasoning.AppendLine("Unfortunately it doesn't look like I can reach there from here.");
+                return false;
+            }
+
+            reasoning.AppendLine("Looks like a good candidate.");
             return true;
         }
 
@@ -197,10 +236,18 @@ namespace WizardsCode.Character
                 return nearbyInteractablesCache;
             }
 
-            nearbyInteractablesCache.Clear();
+            nearbyInteractablesCache = GetInteractiablesNear(transform.position, awarenessRange);
 
-            //TODO Put interactables on a layer to make the physics operation faster
-            Collider[] hitColliders = Physics.OverlapSphere(transform.position, awarenessRange);
+            return nearbyInteractablesCache;
+        }
+
+        // REFACTOR this code is duplicated in MemoryController
+        internal List<Interactable> GetInteractiablesNear(Vector3 position, float range)
+        {
+            List<Interactable> interactables = new List<Interactable>();
+
+            //OPTIMIZATION Put interactables on a layer to make the physics operation faster
+            Collider[] hitColliders = Physics.OverlapSphere(position, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
             Interactable[] currentInteractables;
             for (int i = 0; i < hitColliders.Length; i++)
             {
@@ -209,12 +256,12 @@ namespace WizardsCode.Character
                 {
                     if (currentInteractables[idx].HasSpaceFor(Brain))
                     {
-                        nearbyInteractablesCache.Add(currentInteractables[idx]);
+                        interactables.Add(currentInteractables[idx]);
                     }
                 }
             }
 
-            return nearbyInteractablesCache;
+            return interactables;
         }
     }
 }

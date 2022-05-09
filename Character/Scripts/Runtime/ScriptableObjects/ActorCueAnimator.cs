@@ -1,10 +1,9 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
-using WizardsCode.Character;
 using static WizardsCode.Character.ActorCueAnimator;
 using System;
-using UnityEngine.Serialization;
+using UnityEngine.Playables;
+using UnityEngine.Animations;
 
 namespace WizardsCode.Character
 {
@@ -30,7 +29,11 @@ namespace WizardsCode.Character
         AnimationParameter[] m_AnimationParams;
 
         [Header("Animation Clips")]
-        [SerializeField, Tooltip("Tha name of the animation clip to play.")]
+        [SerializeField, Tooltip("An animation to play that is not in an Animator.")]
+        AnimationClip m_AnimationClip;
+        [SerializeField, Tooltip("Should the duration of this cue be set to the duration of the clip?")]
+        bool m_DurationMatchesAnimation = true;
+        [SerializeField, Tooltip("Tha name of the animation clip to play, this should be the name of a clip in an Animator on the caharacter.")]
         string animationClipName;
         [SerializeField, Tooltip("The normalized time from which to start the animation.")]
         float animationNormalizedTime = 0;
@@ -42,6 +45,8 @@ namespace WizardsCode.Character
         {
             get { return m_LayerWeightChangeTime; }
         }
+
+        public AnimationClip Clip { get { return m_AnimationClip; } }
 
         private void ProcessAnimationLayerWeights()
         {
@@ -76,9 +81,16 @@ namespace WizardsCode.Character
         public override IEnumerator Prompt(BaseActorController actor)
         {
             m_Actor = actor;
+            RuntimeAnimatorController controller = m_Actor.Animator.runtimeAnimatorController;
+
+            if (m_AnimationClip != null && m_DurationMatchesAnimation)
+            {
+                m_Duration = m_AnimationClip.length;
+            }
 
             ProcessAnimationLayerWeights();
             ProcessAnimationParameters();
+            m_Actor.PlayAnimationClip(Clip);
 
             yield return base.Prompt(actor);
         }

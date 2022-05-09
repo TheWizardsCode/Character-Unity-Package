@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using WizardsCode.Character;
 
-namespace WizardsCode.Animation
+namespace WizardsCode.AnimationControl
 {
     /// <summary>
     /// EmotionalStateBehaviour is a StateMachineBehaviour that can be attacched to an animation controller to influence which animations are played.

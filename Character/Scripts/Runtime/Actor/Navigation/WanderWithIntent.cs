@@ -144,6 +144,14 @@ namespace WizardsCode.Character
 
             return msg;
         }
+
+        private void OnValidate()
+        {
+            if (DisplayName == "Unnamed AI Behaviour")
+            {
+                DisplayName = "Wander with Intent";
+            }
+        }
 #endif
     }
 }

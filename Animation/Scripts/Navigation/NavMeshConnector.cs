@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace WizardsCode.Animation
+namespace WizardsCode.AnimationControl
 {
     /// <summary>
     /// The NavMeshConnector converts a `NavMeshAgents` movement to 

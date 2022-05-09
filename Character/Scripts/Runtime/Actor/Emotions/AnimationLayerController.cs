@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace WizardsCode.Animation
+namespace WizardsCode.AnimationControl
 {
     /// <summary>
     /// The AnimationlayerController configures the weights of layers in the Animator based on what the character

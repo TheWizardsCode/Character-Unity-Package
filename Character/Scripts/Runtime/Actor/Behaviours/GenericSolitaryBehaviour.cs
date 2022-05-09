@@ -36,13 +36,7 @@ namespace WizardsCode.Character
             if (m_OnStartCue != null)
             {
                 Brain.Actor.Prompt(m_OnStartCue);
-                EndTime = Time.timeSinceLevelLoad + m_OnStartCue.Duration;
-            }
-
-            if (m_OnPrepareCue)
-            {
-                Brain.Actor.Prompt(m_OnPrepareCue);
-                EndTime = Time.timeSinceLevelLoad + m_OnPrepareCue.Duration;
+                EndTime = Time.timeSinceLevelLoad + m_OnStartCue.m_Duration;
             }
         }
     }

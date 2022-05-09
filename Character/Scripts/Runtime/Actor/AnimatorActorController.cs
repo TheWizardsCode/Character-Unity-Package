@@ -27,10 +27,13 @@ namespace WizardsCode.Character
         {
             base.Awake();
             Animator animator = GetComponentInChildren<Animator>();
-            if (animator.applyRootMotion != m_UseRootMotion)
+            if (animator)
             {
-                Debug.LogWarning($"`{displayName}` does not have a consistent root motion setting in the AnimatorActorController and the Animator. Overriding to `{m_UseRootMotion}` from the AnimatorActorController.");
-                animator.applyRootMotion = m_UseRootMotion;
+                if (animator.applyRootMotion != m_UseRootMotion)
+                {
+                    Debug.LogWarning($"`{displayName}` does not have a consistent root motion setting in the AnimatorActorController and the Animator. Overriding to `{m_UseRootMotion}` from the AnimatorActorController.");
+                    animator.applyRootMotion = m_UseRootMotion;
+                }
             }
         }
 

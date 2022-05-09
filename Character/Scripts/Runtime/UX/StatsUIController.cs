@@ -25,13 +25,9 @@ namespace WizardsCode.Character.Stats
 
         private void Awake()
         {
-            if (m_SelectedCharacter == null)
-            {
-                m_SelectedCharacter = GameObject.FindObjectOfType<Brain>();
-            }
-
             if (m_SelectionManager == null)
             {
+                Debug.LogWarning($"You have not configured the selection manager in {this}. Using `FindObjectOfType` to try to discover it. You should manually set this up in the inspector.");
                 m_SelectionManager = GameObject.FindObjectOfType<ClickToSelect>();
             }
 
@@ -60,7 +56,6 @@ namespace WizardsCode.Character.Stats
                     {
                         if (states[i].statTemplate == null) continue;
 
-                        //TODO cache results rather than grabbing stat every cycle
                         StatSO stat = m_SelectedCharacter.GetOrCreateStat(states[i].statTemplate);
 
                         StatUIPanel stateUI;
@@ -76,12 +71,11 @@ namespace WizardsCode.Character.Stats
                 }
             }
 
-            //TODO: don't update every frame
+            //OPTIMIAZTION: don't update every frame
             if (m_SelectedCharacter != null)
             {
                 if (m_BehaviourLabel != null)
                 {
-                    
                     if (m_SelectedCharacter.ActiveBlockingBehaviour != null)
                     {
                         string duration = Mathf.Clamp(m_SelectedCharacter.ActiveBlockingBehaviour.EndTime - Time.timeSinceLevelLoad, 0, float.MaxValue).ToString("0.0");

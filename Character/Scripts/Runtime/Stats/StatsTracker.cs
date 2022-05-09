@@ -164,13 +164,13 @@ namespace WizardsCode.Stats {
                 if (DesiredStates[i].IsSatisfiedFor(this))
                 {
                     influencers = DesiredStates[i].InfluencersToApplyWhenInDesiredState;
-                    UpdateBehaviours(DesiredStates[i], true);
+                    UpdatePossibleBehaviours(DesiredStates[i], true);
                 }
                 else
                 {
                     influencers = DesiredStates[i].InfluencersToApplyWhenNotInDesiredState;
                     UnsatisfiedDesiredStates.Add(DesiredStates[i]);
-                    UpdateBehaviours(DesiredStates[i], false);
+                    UpdatePossibleBehaviours(DesiredStates[i], false);
                 }
 
                 for (int idx = 0; idx < influencers.Count; idx++)
@@ -187,7 +187,7 @@ namespace WizardsCode.Stats {
         /// </summary>
         /// <param name="state">The state we are updating against</param>
         /// <param name="isSatisfied">whether or ot the state is satisfied.</param>
-        protected virtual void UpdateBehaviours(StateSO state, bool isSatisfied) { }
+        protected virtual void UpdatePossibleBehaviours(StateSO state, bool isSatisfied) { }
 
         /// <summary>
         /// Get a list of stats that are currently outside the desired state for that stat.

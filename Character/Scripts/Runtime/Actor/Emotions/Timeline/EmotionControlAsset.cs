@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
-using WizardsCode.Animation;
+using WizardsCode.AnimationControl;
 
 namespace WizardsCode.Character
 {

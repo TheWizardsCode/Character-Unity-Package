@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace WizardsCode.Animation.DevTest
+namespace WizardsCode.AnimationControl.DevTest
 {
     public class SittingBehaviours : MonoBehaviour
     {

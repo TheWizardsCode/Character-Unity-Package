@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.AI;
 using System;
 
-namespace WizardsCode.Animation
+namespace WizardsCode.AnimationControl
 {
     [RequireComponent(typeof(Animator)),
         RequireComponent(typeof(NavMeshAgent)),

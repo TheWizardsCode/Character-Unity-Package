@@ -14,8 +14,6 @@ namespace WizardsCode.Animation
         float m_MinValue = 0;
         [SerializeField, Range(0, 1), Tooltip("The maximum value in the random range.")]
         float m_MaxValue = 1;
-        [SerializeField, Range(0, 1), Tooltip("The maximum step value in the random changes. Note that the change can be + or minus this amount, constrained by the min and max values above.")]
-        float m_StepValue = 0.2f;
         [SerializeField, Tooltip("The name of the parameter to set.")]
         string m_ParameterName = "Randomness";
         [SerializeField, Range(0.5f, 10), Tooltip("The frequency that the value should be changed.")]
@@ -43,8 +41,7 @@ namespace WizardsCode.Animation
 
             if (m_TimeSinceLastChange > m_FrequencyOfRandomChange)
             {
-                float rand = Random.Range(-m_StepValue, m_StepValue);
-                m_TargetValue = Mathf.Clamp(currentValue + rand, m_MinValue, m_MaxValue);
+                m_TargetValue = Random.Range(m_MinValue, m_MaxValue);
                 m_TimeSinceLastChange = 0;
             }
 

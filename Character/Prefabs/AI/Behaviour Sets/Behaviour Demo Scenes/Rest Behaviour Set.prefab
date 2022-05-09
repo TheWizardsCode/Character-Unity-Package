@@ -56,20 +56,24 @@ MonoBehaviour:
   m_OnEndEvent:
     m_PersistentCalls:
       m_Calls: []
-  m_OnStartCue: {fileID: 11400000, guid: 29999be4377abbf46ac02f3954c9bac1, type: 2}
-  m_OnStartMovingCue: {fileID: 0}
-  m_OnArrivingCue: {fileID: 0}
-  m_OnArrivedCue: {fileID: 0}
-  m_OnEndCue: {fileID: 11400000, guid: 145ac9ac6dbc36e448236a34004ffe76, type: 2}
+  m_OnStartCue: {fileID: 0}
+  m_OnPrepareCue: {fileID: 11400000, guid: 29999be4377abbf46ac02f3954c9bac1, type: 2}
+  m_OnPerformCue:
+  - {fileID: 11400000, guid: 597f52c5c98c1344cacae02fd15b1cff, type: 2}
+  m_OnFinalizeCue: {fileID: 11400000, guid: 145ac9ac6dbc36e448236a34004ffe76, type: 2}
+  m_OnEndCue: {fileID: 0}
+  m_NextBehaviour: {fileID: 0}
   m_WeightMultiplier: 1
+  m_WeightVariation: 0.1
   m_RequiredSenses: []
   m_RequiredStats:
   - statTemplate: {fileID: 11400000, guid: 1134128b230d7734dad1c54314c6d317, type: 2}
     objective: 0
-    m_Value: 70
+    m_Value: 30
   m_CharacterInfluences: []
   m_DesiredStateImpacts:
   - statTemplate: {fileID: 11400000, guid: 1134128b230d7734dad1c54314c6d317, type: 2}
     objective: 2
   m_RequiredWorldState: []
+  CurrentState: 5
   awarenessRange: 10

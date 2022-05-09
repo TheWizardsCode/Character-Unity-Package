@@ -1,7 +1,9 @@
 using System;
 using UnityEngine;
 using UnityEngine.AI;
-using WizardsCode.Animation;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
+using WizardsCode.AnimationControl;
 using WizardsCode.Stats;
 
 namespace WizardsCode.Character
@@ -111,6 +113,31 @@ namespace WizardsCode.Character
         private void OnAnimatorIK(int layerIndex)
         {
             LookAtIK();
+        }
+
+        private void OnDisable()
+        {
+            _playableGraph.Destroy();
+        }
+
+        /// <summary>
+        /// If the clip is non null then it will be played using a Playable. 
+        /// </summary>
+        /// <param name="clip"></param>
+        public void PlayAnimationClip(AnimationClip clip)
+        {
+            if (clip)
+            {
+                AnimationPlayableUtilities.PlayClip(Animator, clip, out _playableGraph);
+            }
+        }
+
+        /// <summary>
+        /// Switch back to animating using the animation controller.
+        /// </summary>
+        public void PlayAnimatorController()
+        {
+            AnimationPlayableUtilities.PlayAnimatorController(Animator, m_AnimatorController, out _playableGraph);
         }
 
         protected void LookAtIK()
@@ -240,6 +267,8 @@ namespace WizardsCode.Character
         protected float m_runSqrMagnitude;
         protected float m_sprintSqrMagnitude;
         private Transform m_InteractionPoint;
+        private PlayableGraph _playableGraph;
+        private RuntimeAnimatorController m_AnimatorController;
 
         protected virtual void Awake()
         {
@@ -260,6 +289,7 @@ namespace WizardsCode.Character
                 m_Animator = GetComponentInChildren<Animator>();
             }
             m_AnimationLayers = GetComponentInChildren<AnimationLayerController>();
+            m_AnimatorController = m_Animator.runtimeAnimatorController;
 
             m_Agent = GetComponent<NavMeshAgent>();
             if (m_Agent != null)

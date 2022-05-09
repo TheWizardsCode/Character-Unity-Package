@@ -110,7 +110,7 @@ MonoBehaviour:
   m_Description: 
   m_Type: {fileID: 11400000, guid: 80165435f228fa64db0117bb32a3a78d, type: 2}
   m_InteractionNameFromActorsPerspective: Sleep
-  m_MaxInteractors: 5
+  m_MaxInteractors: 2
   m_CharacterInfluences:
   - statTemplate: {fileID: 11400000, guid: 1134128b230d7734dad1c54314c6d317, type: 2}
     maxChange: 70
@@ -118,8 +118,7 @@ MonoBehaviour:
   m_InteractionPoint: {fileID: 0}
   m_DestroyOnUse: 0
   m_ObjectInfluences: []
-  m_Duration: 60
-  m_ActorCue: {fileID: 11400000, guid: 597f52c5c98c1344cacae02fd15b1cff, type: 2}
+  m_ActorPerformCue: {fileID: 0}
   m_Cooldown: 30
 --- !u!1001 &3769149022651719600
 PrefabInstance:

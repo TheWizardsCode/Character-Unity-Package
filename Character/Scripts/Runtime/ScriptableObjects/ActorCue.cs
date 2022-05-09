@@ -16,7 +16,7 @@ namespace WizardsCode.Character
         string m_Description;
 
         [SerializeField, Tooltip("Duration of this phase of this cue action. If 0 then it is unlimited.")]
-        public float Duration = 5;
+        public float m_Duration = 5;
 
         [Header("Movement")]
         [SerializeField, Tooltip("The name of the mark the actor should move to on this cue.")]
@@ -54,7 +54,7 @@ namespace WizardsCode.Character
             ProcessMove();
             ProcessAudio();
 
-            return UpdateCoroutine();
+            yield return UpdateCoroutine();
         }
 
         /// <summary>

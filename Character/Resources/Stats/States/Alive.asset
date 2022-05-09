@@ -15,7 +15,7 @@ MonoBehaviour:
   DisplayName: Alive
   m_Stat: {fileID: 11400000, guid: 4cf63de4e2fa1b1469bf45c8150329bd, type: 2}
   m_Objective: 2
-  m_NormalizeTargetValue: 0
+  m_NormalizedTargetValue: 0
   m_NotInDesiredState: []
   m_InDesiredState: []
   m_SatisfiedBehaviours: []

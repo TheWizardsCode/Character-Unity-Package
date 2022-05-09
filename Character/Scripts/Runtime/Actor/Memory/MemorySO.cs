@@ -10,6 +10,8 @@ namespace WizardsCode.Character
     /// </summary>
     public class MemorySO : ScriptableObject
     {
+        [SerializeField, Tooltip("The location the memory was generated.")]
+        Vector3 m_Location;
         [SerializeField, Tooltip("The game object that this memory is about.")]
         GameObject m_About;
         [SerializeField, Tooltip("The name of the interaction that generated this memory.")]
@@ -64,9 +66,17 @@ namespace WizardsCode.Character
             set { m_IsGood = value; }
         }
 
+        public Vector3 position
+        {
+            get { return m_Location; }
+            set { m_Location = value; }
+        }
+
         public GameObject about {
             get {return m_About;}
-            set { m_About = value; }
+            set {
+                m_About = value; 
+            }
         }
 
         public StatSO stat

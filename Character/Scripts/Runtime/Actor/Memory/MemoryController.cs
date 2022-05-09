@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using WizardsCode.Stats;
+using Random = UnityEngine.Random;
 
 namespace WizardsCode.Character
 {
@@ -13,15 +14,32 @@ namespace WizardsCode.Character
 #endif
     {
 
-        [SerializeField, Tooltip("The set of currently retained short term memories.")]
+        [SerializeField, Tooltip("The set of currently retained short term memories. Memories go into short-term first." +
+            " They will remain there until either driven out by a more recent memory or moved into long term memory." +
+            " The conditions under which they are moved into long term memory as set by the `Long Term Memory Threshold`, below.")]
         List<MemorySO> m_ShortTermMemories = new List<MemorySO>();
-        [SerializeField, Tooltip("The set of currently retained long term memories. Long term memories are discard when space runs out.")]
-        List<MemorySO> m_LongTermMemories = new List<MemorySO>();
-        [SerializeField, Tooltip("The threshold at which short term memories or collections of memories are moved to long term memory.")]
-        int m_LongTermMemoryThreshold = 100;
-
+        [SerializeField, Tooltip("The number of individual short term memories this character can hold at any one time." +
+            " If a new memory is recieved that would push the number of retained memories over this limit AND if" +
+            " no existing memory can be pushed to long-term memory then an existing short-term memory is lost.")]
         int m_ShortTermMemorySize = 5;
+        [SerializeField, Tooltip("The threshold of influence at which short term memories are moved to long term memory." +
+            " That is when an individual memory has had this much influence over the characters stats it will be moved into" +
+            " long-term memory.")]
+        int m_LongTermMemoryThreshold = 100;
+        [SerializeField, Tooltip("The set of currently retained long term memories." +
+            " Long term memories are discarded when space runs out.")]
+        List<MemorySO> m_LongTermMemories = new List<MemorySO>();
+        [SerializeField, Tooltip("The maximum number of long-term memories that the character can retain." +
+            " If a new long-term memory is acquired that would push us over this capacity then an existing" +
+            " memory will be lost.")]
         int m_LongTermMemorySize = 10;
+
+        Brain brain;
+
+        private void Awake()
+        {
+            brain = GetComponentInParent<Brain>();
+        }
 
         /// <summary>
         /// Get all short term memories, about a Game Object.
@@ -31,6 +49,17 @@ namespace WizardsCode.Character
         public MemorySO[] GetShortTermMemoriesAbout(GameObject go)
         {
             return m_ShortTermMemories.Where(m => GameObject.ReferenceEquals(go, m.about)).ToArray<MemorySO>();
+        }
+
+        /// <summary>
+        /// Get all short term memories, within a range of a position.
+        /// </summary>
+        /// <param name="go">The Game Object to retrieve memories about.</param>
+        /// <param name="range">The range within which memories should be returned.</param>
+        /// <returns></returns>
+        public MemorySO[] GetShortTermMemoriesNear(Vector3 position, float range)
+        {
+            return m_ShortTermMemories.Where(m => (m.position - position).sqrMagnitude < range * range).ToArray<MemorySO>();
         }
 
         /// <summary>
@@ -110,43 +139,13 @@ namespace WizardsCode.Character
         /// </summary>
         /// <param name="range">The range within which interactables must be to be recalled</param>
         /// <returns>All interactables remembered with range</returns>
-        public MemorySO[] GetAllMemoriesAboutInteractables(float range)
+        public MemorySO[] GetAllMemories(float range)
         {
-            Interactable interactable;
-            List<MemorySO> memories = new List<MemorySO>();
+            MemorySO[] memories = new MemorySO[m_ShortTermMemories.Count + m_LongTermMemories.Count];
+            m_ShortTermMemories.CopyTo(memories, 0);
+            m_LongTermMemories.CopyTo(memories, m_ShortTermMemories.Count);
 
-            for (int i = m_ShortTermMemories.Count - 1; i >= 0; i--)
-            {
-                if (m_ShortTermMemories[i].about != null)
-                {
-                    interactable = m_ShortTermMemories[i].about.GetComponent<Interactable>();
-                    if (interactable != null)
-                    {
-                        memories.Add(m_ShortTermMemories[i]);
-                    }
-                } else
-                {
-                    m_ShortTermMemories.RemoveAt(i);
-                }
-            }
-
-            for (int i = m_LongTermMemories.Count - 1; i >= 0; i--)
-            {
-                if (m_LongTermMemories[i].about == null)
-                {
-                    interactable = m_LongTermMemories[i].about.GetComponent<Interactable>();
-                    if (interactable != null)
-                    {
-                        memories.Add(m_LongTermMemories[i]);
-                    }
-                }
-                else
-                {
-                    m_LongTermMemories.RemoveAt(i);
-                }
-            }
-
-            return memories.ToArray();
+            return memories;
         }
 
         /// <summary>
@@ -202,7 +201,15 @@ namespace WizardsCode.Character
         /// <returns>Return an existing short term memory that is similar, if one exists, or null.</returns>
         public MemorySO GetSimilarShortTermMemory(MemorySO memory)
         {
-            MemorySO[] memories = GetShortTermMemoriesAbout(memory.about);
+            MemorySO[] memories;
+            if (memory.about)
+            {
+                memories = GetShortTermMemoriesAbout(memory.about);
+            } else
+            {
+                memories = GetShortTermMemoriesNear(memory.position, 10);
+            }
+
             if (memories.Length > 0)
             {
                 for (int i = 0; i < memories.Length; i++)
@@ -299,6 +306,7 @@ namespace WizardsCode.Character
             if (influencer.Generator == null) return; // don't hold memories about behaviours only influencers
 
             MemorySO memory = ScriptableObject.CreateInstance<MemorySO>();
+            memory.position = influencer.Generator.transform.position;
             memory.about = influencer.Generator;
             memory.interactionName = influencer.InteractionName;
             memory.stat = influencer.stat;

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Hunger
   m_EditorClassIdentifier: 
   m_DisplayName: Hunger
-  startValue: 100
+  startValue: 50
   m_MinValue: 0
   m_MaxValue: 100
   m_AdjustsOverTime: 1

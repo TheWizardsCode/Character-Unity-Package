@@ -97,6 +97,11 @@ namespace WizardsCode.Stats {
             get { return base.TargetInteractable; }
             set
             {
+                if (base.TargetInteractable == value)
+                {
+                    return;
+                }
+
                 base.TargetInteractable = value;
 
                 if (Actor != null
@@ -236,14 +241,22 @@ namespace WizardsCode.Stats {
         /// </summary>
         private void UpdateActiveBehaviour()
         {
-            if (ActiveBlockingBehaviour != null 
-                && ActiveBlockingBehaviour 
+            if (ActiveBlockingBehaviour != null
+                && ActiveBlockingBehaviour
                 && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.Inactive
-                && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.MovingTo
-                && !ActiveBlockingBehaviour.IsInteruptable) return;
+                && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.MovingTo)
+            {
+                return;
+            }
+
+            if (ActiveBlockingBehaviour != null && !ActiveBlockingBehaviour.IsInteruptable)
+            {
+                return;
+            }
 
             bool isInterupting = false;
-            if (ActiveBlockingBehaviour != null && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.Inactive)
+            if (ActiveBlockingBehaviour != null 
+                && ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.Inactive)
             {
                 isInterupting = true;
             }
@@ -258,34 +271,34 @@ namespace WizardsCode.Stats {
                 log.Append("# Evaluating ");
                 log.AppendLine(m_AvailableBehaviours[i].DisplayName);
 
+                if (m_AvailableBehaviours[i].DisplayName == m_RequestedBehaviour)
+                {
+                    m_AvailableBehaviours[i].isPrioritized = true;
+                }
+
                 if (m_AvailableBehaviours[i].CurrentState != AbstractAIBehaviour.State.Inactive)
                 {
                     if (m_AvailableBehaviours[i].IsInteruptable)
                     {
                         log.AppendLine("Already executing but can interupt - checking requirements are still valid.");
-                        highestWeight = m_AvailableBehaviours[i].Weight(this);
+
+                        currentWeight = m_AvailableBehaviours[i].Weight(this) * 2;
+
+                        log.Append(m_AvailableBehaviours[i].DisplayName);
+                        log.Append(" has a weight of ");
+                        log.AppendLine(currentWeight.ToString());
+                        if (currentWeight > highestWeight)
+                        {
+                            candidateBehaviour = m_AvailableBehaviours[i];
+                            highestWeight = currentWeight;
+                        }
                     }
                     else
                     {
-                        log.AppendLine("Already executing and cannot interupt - no need to start it again though.");
-                        if (m_AvailableBehaviours[i].Weight(this) > highestWeight)
-                        {
-                            candidateBehaviour = m_AvailableBehaviours[i];
-                            highestWeight = m_AvailableBehaviours[i].Weight(this);
-                            log.Append(m_AvailableBehaviours[i].DisplayName);
-                            log.Append(" has a weight of ");
-                            log.AppendLine(currentWeight.ToString());
-                        }
+                        Debug.LogWarning($"{m_AvailableBehaviours[i].DisplayName} is already executing and cannot interupt - we shouldn't be evaluating alternatives - why is this executing?");
                         continue;
                     }
-                }
-
-                if (m_AvailableBehaviours[i].DisplayName == m_RequestedBehaviour)
-                { 
-                    m_AvailableBehaviours[i].isPrioritized = true;
-                }
-
-                if (m_AvailableBehaviours[i].isPrioritized |  m_AvailableBehaviours[i].IsAvailable)
+                } else if (m_AvailableBehaviours[i].isPrioritized || m_AvailableBehaviours[i].IsAvailable)
                 {
                     log.AppendLine("## Weight");
                     currentWeight = m_AvailableBehaviours[i].Weight(this); 
@@ -385,7 +398,12 @@ namespace WizardsCode.Stats {
             Log(log.ToString());
         }
 
-        protected override void UpdateBehaviours(StateSO state, bool isSatisfied)
+        /// <summary>
+        /// Update the possible beahviours for this AI based on the current status of a desired state.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="isSatisfied"></param>
+        protected override void UpdatePossibleBehaviours(StateSO state, bool isSatisfied)
         {
             Transform behaviourT;
             string behaviourName;
@@ -420,7 +438,14 @@ namespace WizardsCode.Stats {
                 }
                 else if (isSatisfied && behaviourT != null)
                 {
-                    Destroy(behaviourT.gameObject);
+                    AbstractAIBehaviour behaviour = behaviourT.GetComponent<AbstractAIBehaviour>();
+                    if (behaviour.CurrentState == AbstractAIBehaviour.State.Inactive)
+                    {
+                        Destroy(behaviourT.gameObject);
+                    } else
+                    {
+                        behaviour.DestoryOnInactive = true;
+                    }
                 }
             }
         }

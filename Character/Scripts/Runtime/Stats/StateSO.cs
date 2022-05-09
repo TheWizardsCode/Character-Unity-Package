@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using WizardsCode.Stats;
+using UnityEngine.Serialization;
 
 namespace WizardsCode.Character
 {
@@ -26,13 +27,16 @@ namespace WizardsCode.Character
         [SerializeField, Tooltip("State objective indicates whether our target value is a minimum, maxium or goal.")]
         Objective m_Objective;
         [SerializeField, Tooltip("The normalized target value of this stat."), Range(0f,1f)]
-        float m_NormalizeTargetValue;
+        [FormerlySerializedAs("m_NormalizeTargetValue")] // changed 4/21/22
+        float m_NormalizedTargetValue;
 
         [Header("Effects")]
         [SerializeField, Tooltip("An influencer to apply whenever this state is not in the desired state. This can be used to do things like decrease health if a character is below a given energy threshold.")]
         List<StatInfluencerSO> m_NotInDesiredState = new List<StatInfluencerSO>();
         [SerializeField, Tooltip("An influencer to apply whenever this state is in the desired state. This can be used to do things like increase health if a character is above a given energy threshold.")]
         List<StatInfluencerSO> m_InDesiredState = new List<StatInfluencerSO>();
+
+        [Header("Behaviours")]
         [SerializeField, Tooltip("Behaviours to add when this state is satisfied, and remove when unsatisfied.")]
         List<AbstractAIBehaviour> m_SatisfiedBehaviours = new List<AbstractAIBehaviour>();
         [SerializeField, Tooltip("Behaviours to add when this state is unsatisfied, and remove when satisfied.")]
@@ -94,8 +98,8 @@ namespace WizardsCode.Character
 
         public float normalizedTargetValue
         {
-            get { return m_NormalizeTargetValue; }
-            set { m_NormalizeTargetValue = value; }
+            get { return m_NormalizedTargetValue; }
+            set { m_NormalizedTargetValue = value; }
         }
 
         /// <summary>

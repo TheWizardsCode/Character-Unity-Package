@@ -18,5 +18,5 @@ In this scene there are two characters. They wander around. If they see the othe
     * Add a required sense to the `Melee Attack` behaviour and drag in the `Spot Enemy` sense into the slot
     * Ensure `Require Consent` is set to false
     * Reduce the `Cooldown Time` to 1 second
-    * Add the `Fists Damage Influencer` to the `Enemy Stat Influencers`
+    * Add the `Packages/wizardscode.character/Character/Resources/Stats/Stat Influencers/Weapons/Fists Damage Influencer.asset` to the `Enemy Stat Influencers`
   

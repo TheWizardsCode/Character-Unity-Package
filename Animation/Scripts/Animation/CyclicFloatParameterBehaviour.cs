@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace WizardsCode.Animation
+namespace WizardsCode.AnimationControl
 {
     /// <summary>
     /// A State Machine Behaviour that will set a Float Parameter on an animator on a cycle between two values.

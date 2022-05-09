@@ -15,6 +15,7 @@ namespace WizardsCode.Character
 {
     public abstract class AbstractAIBehaviour : MonoBehaviour
     {
+        #region Inspector Fields
         [Header("UI")]
         [SerializeField, Tooltip("A player readable description of the behaviour.")]
         [TextArea(3, 10)]
@@ -38,11 +39,13 @@ namespace WizardsCode.Character
         [SerializeField, Tooltip("If a behaviour is blocking it means no other blocking behaviour can be carried out at the same time. Most behaviours are blocking, however, some special behaviours, such as being preganant, do not entirely block other behaviours.")]
         bool m_IsBlocking = true;
 
-        [Header("Actions")]
+        [Header("Events")]
         [SerializeField, Tooltip("Events to fire when this behaviour is started.")]
         protected UnityEvent m_OnStartEvent;
         [SerializeField, Tooltip("Events to fire when this behaviour is finished.")]
         protected UnityEvent m_OnEndEvent;
+
+        [Header("Cues")]
         [SerializeField, Tooltip("An actor cue to send to the actor upon the start of this interaction. It should be used to configure the actor ready for the interaction.")]
         [FormerlySerializedAs("m_OnStart")] // v0.12
         protected ActorCue m_OnStartCue;
@@ -79,6 +82,7 @@ namespace WizardsCode.Character
         DesiredStatImpact[] m_DesiredStateImpacts = new DesiredStatImpact[0];
         [SerializeField, Tooltip("The conditions required in the worldstate for this behaviour to be valid.")]
         WorldStateSO[] m_RequiredWorldState;
+        #endregion
 
         public enum State { Starting, Preparing, Performing, Finalizing, Ending, Inactive, MovingTo }
         public State CurrentState = State.Inactive;
@@ -208,6 +212,12 @@ namespace WizardsCode.Character
         }
 
         /// <summary>
+        /// Indicates if this behaviour should be destroyed, and thus removed from the character
+        /// when it next enters the Inactive state.
+        /// </summary>
+        public bool DestoryOnInactive = false;
+
+        /// <summary>
         /// Check that all the required senses of the world around the cahracter are true.
         /// </summary>
         /// <returns>True if all senses are true</returns>
@@ -325,12 +335,47 @@ namespace WizardsCode.Character
             if (m_OnStartCue != null)
             {
                 Brain.Actor.Prompt(m_OnStartCue);
-                EndTime = Time.timeSinceLevelLoad + m_OnStartCue.Duration;
+                EndTime = Time.timeSinceLevelLoad + m_OnStartCue.m_Duration;
             }
 
             if (m_OnStartEvent != null)
             {
                 m_OnStartEvent.Invoke();
+            }
+        }
+
+        /// <summary>
+        /// If this cue has animations for the start, prepare, perform, finalize and/or end phases then set
+        /// them up in the animator.
+        /// </summary>
+        void SetupAnimations()
+        {
+            if (m_OnStartCue is ActorCueAnimator)
+            {
+                Debug.Log("Setup Start Animations");
+            }
+            
+            if (m_OnPrepareCue is ActorCueAnimator)
+            {
+                //m_ActorController.Animator.SetPrepareClip(((ActorCueAnimator)m_OnPrepareCue).Clip);
+            }
+            
+            for (int i = 0; i < m_OnPerformCue.Length; i++)
+            {
+                if (m_OnPerformCue[i] is ActorCueAnimator)
+                {
+                    Debug.Log("Setup Perform Animations");
+                }
+            }
+
+            if (m_OnFinalizeCue is ActorCueAnimator)
+            {
+                Debug.Log("Setup Finalize Animations");
+            }
+            
+            if (m_OnEndCue is ActorCueAnimator)
+            {
+                Debug.Log("Setup End Animations");
             }
         }
 
@@ -422,7 +467,7 @@ namespace WizardsCode.Character
                 return;
             }
 
-            if (CurrentState == State.Preparing)
+            if (CurrentState == State.Preparing && !Brain.Actor.IsMoving)
             {
                 CurrentState = State.Performing;
 
@@ -432,7 +477,7 @@ namespace WizardsCode.Character
                     if (performingCue != null)
                     {
                         Brain.Actor.Prompt(performingCue);
-                        EndTime = Time.timeSinceLevelLoad + performingCue.Duration;
+                        EndTime = Time.timeSinceLevelLoad + performingCue.m_Duration;
                     }
                 }
                 else
@@ -454,7 +499,7 @@ namespace WizardsCode.Character
                 if (m_OnFinalizeCue != null)
                 {
                     Brain.Actor.Prompt(m_OnFinalizeCue);
-                    EndTime = Time.timeSinceLevelLoad + m_OnFinalizeCue.Duration;
+                    EndTime = Time.timeSinceLevelLoad + m_OnFinalizeCue.m_Duration;
                 }
                 else
                 {
@@ -476,6 +521,17 @@ namespace WizardsCode.Character
                 CurrentState = State.Inactive;
                 Brain.ActiveBlockingBehaviour = null;
                 Brain.TargetInteractable = null;
+                if (DestoryOnInactive)
+                {
+                    if (gameObject.GetComponents<AbstractAIBehaviour>().Length > 1)
+                    {
+                        Destroy(this);
+                    }
+                    else
+                    {
+                        Destroy(gameObject);
+                    }
+                }
                 return;
             }
         }
@@ -489,7 +545,7 @@ namespace WizardsCode.Character
             if (m_OnPrepareCue)
             {
                 Brain.Actor.Prompt(m_OnPrepareCue);
-                EndTime = Time.timeSinceLevelLoad + m_OnPrepareCue.Duration;
+                EndTime = Time.timeSinceLevelLoad + m_OnPrepareCue.m_Duration;
             }
             else
             {
@@ -530,6 +586,7 @@ namespace WizardsCode.Character
             {
                 if (!interactable.HasInfluenceOn(DesiredStateImpacts[idx]))
                 {
+                    reasoning.Append($" doesn't have the desired effect on {DesiredStateImpacts[idx].statTemplate.DisplayName}.");
                     return false;
                 }
             }
@@ -568,8 +625,10 @@ namespace WizardsCode.Character
             if (m_OnEndCue != null)
             {
                 Brain.Actor.Prompt(m_OnEndCue);
-                EndTime = Time.timeSinceLevelLoad + m_OnEndCue.Duration;
+                EndTime = Time.timeSinceLevelLoad + m_OnEndCue.m_Duration;
             }
+
+            Brain.Actor.PlayAnimatorController();
 
             return EndTime;
         }

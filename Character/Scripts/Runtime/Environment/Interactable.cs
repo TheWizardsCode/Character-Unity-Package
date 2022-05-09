@@ -20,6 +20,7 @@ namespace WizardsCode.Character
     [RequireComponent(typeof(Collider))]
     public class Interactable : MonoBehaviour
     {
+        #region Inspector Values
         [Header("Overview")]
         [SerializeField, TextArea, Tooltip("A description of this interactable action.")]
         string m_Description;
@@ -42,18 +43,19 @@ namespace WizardsCode.Character
         bool m_DestroyOnUse = false;
         [SerializeField, Tooltip("The set of object stats and the influence to apply to them when a character interacts with the object.")]
         internal StatInfluence[] m_ObjectInfluences;
-        [SerializeField, Tooltip("The Actor cue to perform when a characrter is interacting with this object.")]
-        [FormerlySerializedAs("m_ActorCue")] // 3/26
-        internal ActorCue m_ActorPerformCue;
         [SerializeField, Tooltip("The cooldown time before a character can be influenced by this influencer again.")]
         float m_Cooldown = 30;
+        #endregion
 
+        #region Variables
         List<StatsTracker> m_Reservations = new List<StatsTracker>();
 
         StatsTracker m_StatsTracker;
         private Dictionary<StatsTracker, float> m_TimeOfLastInfluence = new Dictionary<StatsTracker, float>();
         private List<StatsTracker> m_ActiveInteractors = new List<StatsTracker>();
+        #endregion
 
+        # region Properties
         /// <summary>
         /// Get the position and rotation that an Actor should take in order to
         /// interact with this interactable;
@@ -71,10 +73,14 @@ namespace WizardsCode.Character
                         if (colliders[i].isTrigger && distance < colliders[i].bounds.extents.x)
                         {
                             distance = colliders[i].bounds.extents.x * 0.8f;
+                        } else
+                        {
+                            distance = 1;
                         }
                     }
                     m_InteractionPoint = new GameObject("Interaction Point").transform;
                     m_InteractionPoint.position = transform.position + transform.forward * distance;
+                    m_InteractionPoint.rotation = Quaternion.LookRotation(transform.position - m_InteractionPoint.transform.position, Vector3.up);
                     m_InteractionPoint.SetParent(transform);
                 }
                 return m_InteractionPoint;
@@ -115,13 +121,45 @@ namespace WizardsCode.Character
         { 
             get { return m_Type; }
         }
+        #endregion
 
+        #region Lifecycle
         void Awake()
         {
             m_StatsTracker = GetComponentInParent<StatsTracker>();
             InteractableManager.Instance.Register(this);
         }
+        private void OnTriggerEnter(Collider other)
+        {
+            if (other.gameObject == this.gameObject) return;
 
+            Brain brain = other.transform.root.GetComponentInChildren<Brain>();
+            if (brain == null || !brain.ShouldInteractWith(this))
+            {
+                return;
+            }
+
+            StartCharacterInteraction(brain);
+        }
+
+        private void OnTriggerStay(Collider other)
+        {
+            if (other.gameObject == this.gameObject) return;
+
+            Brain brain = other.transform.root.GetComponentInChildren<Brain>();
+            if (brain == null
+                || brain.ActiveBlockingBehaviour == null
+                || brain.ActiveBlockingBehaviour.CurrentState != AbstractAIBehaviour.State.MovingTo
+                || !brain.ShouldInteractWith(this))
+            {
+                return;
+            }
+
+            StartCharacterInteraction(brain);
+        }
+        #endregion
+
+        #region Availability
         /// <summary>
         /// Reserve this interactable for a given actor. This actor should
         /// be on their way to the interactable. Only a limited number of actors can reserve
@@ -228,25 +266,17 @@ namespace WizardsCode.Character
             }
             return isValid;
         }
+        #endregion
 
-        private void OnTriggerEnter(Collider other)
+        #region Interaction
+        internal void StartCharacterInteraction(StatsTracker stats)
         {
-            if (other.gameObject == this.gameObject) return;
-
-            StatsTracker stats = other.transform.root.GetComponentInChildren<StatsTracker>();
-            if (stats == null || !stats.ShouldInteractWith(this)) return;
-
             if (!HasSpaceFor(stats))
             {
                 stats.TargetInteractable = null;
                 return;
             }
 
-            StartCharacterInteraction(stats);
-        }
-
-        internal void StartCharacterInteraction(StatsTracker stats)
-        {
             if (stats is Brain)
             {
                 Brain brain = (Brain)stats;
@@ -302,5 +332,6 @@ namespace WizardsCode.Character
                 m_StatsTracker.TryAddInfluencer(influencer);
             }
         }
+        #endregion
     }
 }

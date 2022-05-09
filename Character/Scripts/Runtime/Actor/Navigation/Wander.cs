@@ -20,13 +20,13 @@ namespace WizardsCode.Character
 #endif
     {
         [SerializeField, Tooltip("The minimum time that a character will continue on a random. If the character reaches a waypoint within this time then they will continue in roughly the same direction.")]
-        private float minTimeBetweenRandomPathChanges = 5;
+        private float minTimeBetweenRandomPathChanges = 10;
         [SerializeField, Tooltip("The maximum time that a character will continue on a random path.")]
-        private float maxTimeBetweenRandomPathChanges = 15;
+        private float maxTimeBetweenRandomPathChanges = 20;
         [SerializeField, Tooltip("The minimum distance the agent will typically travel on a given path before they change direction.")]
-        private float minDistanceOfRandomPathChange = 10;
+        private float minDistanceOfRandomPathChange = 15;
         [SerializeField, Tooltip("The maximum distance the agent will typically travel on a given path before they change direction.")]
-        private float maxDistanceOfRandomPathChange = 20;
+        private float maxDistanceOfRandomPathChange = 30;
         [SerializeField, Tooltip("The minimum angle that the character will deviate from the current path when changing the wander direction.")]
         private float minAngleOfRandomPathChange = -60;
         [SerializeField, Tooltip("The maximum angle that the character will deviate from the current path when changing the wander direction.")]
