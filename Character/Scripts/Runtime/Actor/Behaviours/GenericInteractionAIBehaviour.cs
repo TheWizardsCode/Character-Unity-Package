@@ -35,7 +35,6 @@ namespace WizardsCode.Character
         internal virtual void StartBehaviour(Interactable interactable)
         {
             m_ActorController.LookAtTarget = interactable.transform;
-            m_ActorController.TurnToFace(interactable.transform.position);
 
             m_Interactable = interactable;
 
@@ -44,7 +43,7 @@ namespace WizardsCode.Character
 
         protected override void OnUpdate()
         {
-            if (CurrentState == State.Preparing)
+            if (CurrentState == State.Starting)
             {
                 Brain.Actor.TurnToFace(m_Interactable.transform.position);
             }

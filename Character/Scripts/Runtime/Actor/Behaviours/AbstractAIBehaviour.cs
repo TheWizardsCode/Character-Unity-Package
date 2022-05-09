@@ -10,6 +10,7 @@ using WizardsCode.Character.WorldState;
 using WizardsCode.Character.AI;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
+using static WizardsCode.Character.BaseActorController;
 
 namespace WizardsCode.Character
 {
@@ -323,25 +324,10 @@ namespace WizardsCode.Character
         /// an interactable and somehow this method gets called it will return with no
         /// actions (after logging a warning).
         /// </summary>
-        /// <param name="maxDuration">The maximum duration that this behaviuour can take</param>
         internal virtual void StartBehaviour()
         {
-            CurrentState = State.Starting;
-
             isPrioritized = false;
             MaxEndTime = Time.timeSinceLevelLoad + MaximumExecutionTime;
-            AddCharacterInfluencers(10);
-
-            if (m_OnStartCue != null)
-            {
-                Brain.Actor.Prompt(m_OnStartCue);
-                EndTime = Time.timeSinceLevelLoad + m_OnStartCue.m_Duration;
-            }
-
-            if (m_OnStartEvent != null)
-            {
-                m_OnStartEvent.Invoke();
-            }
         }
 
         /// <summary>
@@ -461,8 +447,30 @@ namespace WizardsCode.Character
         /// </summary>
         protected virtual void OnUpdate()
         {   
+            if (CurrentState == State.MovingTo)
+            {
+                if (m_ActorController.state == States.Arrived)
+                {
+                    CurrentState = State.Starting;
+                }
+                return;
+            }
+
             if (CurrentState == State.Starting)
             {
+                AddCharacterInfluencers(10);
+
+                if (m_OnStartCue != null)
+                {
+                    Brain.Actor.Prompt(m_OnStartCue);
+                    EndTime = Time.timeSinceLevelLoad + m_OnStartCue.m_Duration;
+                }
+
+                if (m_OnStartEvent != null)
+                {
+                    m_OnStartEvent.Invoke();
+                }
+
                 CurrentState = CheckEnvironment();
                 return;
             }

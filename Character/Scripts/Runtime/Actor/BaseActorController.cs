@@ -211,6 +211,11 @@ namespace WizardsCode.Character
             MoveTo(destination.position, null, null, null);
         }
 
+        public virtual void MoveTo(Vector3 position)
+        {
+            MoveTo(position, null, null, null);
+        }
+
         public void TurnTo(Quaternion rotation)
         {
             desiredRotation = rotation;
@@ -400,7 +405,8 @@ namespace WizardsCode.Character
                         onStationary();
                         onStationary = null;
                         hasMoved = false;
-                    } else if (m_Agent.remainingDistance > ArrivingDistance)
+                    }
+                    else if (m_Agent.remainingDistance > ArrivingDistance)
                     {
                         state = States.Moving;
                     }
@@ -422,7 +428,7 @@ namespace WizardsCode.Character
                     hasMoved = true;
                     break;
                 case States.Arriving:
-                    if (m_Agent.remainingDistance <= m_Agent.stoppingDistance)
+                    if (HasArrived())
                     {
                         if (onArrived != null)
                         {
@@ -442,6 +448,11 @@ namespace WizardsCode.Character
                 default:
                     break;
             }
+        }
+
+        internal bool HasArrived()
+        {
+            return m_Agent.remainingDistance <= m_Agent.stoppingDistance;
         }
 
         public bool IsMoving

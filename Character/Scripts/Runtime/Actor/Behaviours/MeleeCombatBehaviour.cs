@@ -60,11 +60,7 @@ namespace WizardsCode.Character.AI
             m_InteractionPoint = target.transform.position - offset;
             m_InteractionGroupCenter = m_InteractionPoint;
 
-            Brain.Actor.MoveTo(m_InteractionPoint,
-                    null,
-                    null,
-                    null
-                );
+            Brain.Actor.MoveTo(m_InteractionPoint);
         }
     }
 }

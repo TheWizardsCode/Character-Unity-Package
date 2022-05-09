@@ -273,14 +273,7 @@ namespace WizardsCode.Character.AI
             // If we are too far away set start moving and set the callback to perform the action when arriving
             if (Vector3.SqrMagnitude(Brain.Actor.MoveTargetPosition - m_InteractionPoint) > m_SqrArrivingDistance)
             {
-                Brain.Actor.MoveTo(m_InteractionPoint,
-                    () =>
-                    {
-                        CurrentState = State.Preparing;
-                    },
-                    null,
-                    null
-                );
+                Brain.Actor.MoveTo(m_InteractionPoint);
             }
         }
 
