@@ -4,7 +4,7 @@ using TMPro;
 using UnityEditor;
 using UnityEngine;
 
-namespace WizardsCode.Utility.UI
+namespace WizardsCode.BackgroundAI.UI
 {
     /// <summary>
     /// Attach to an instrcutions panel so that it can be removed by pressing the ESC key.

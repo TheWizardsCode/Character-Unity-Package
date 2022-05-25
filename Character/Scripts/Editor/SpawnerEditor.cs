@@ -1,5 +1,5 @@
 using UnityEditor;
-using WizardsCode.Utility;
+using WizardsCode.BackgroundAI;
 
 namespace WizardsCode.Character
 {

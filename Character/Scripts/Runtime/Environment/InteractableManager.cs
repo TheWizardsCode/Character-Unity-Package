@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using WizardsCode.Utility;
+using WizardsCode.BackgroundAI;
 using System;
 
 namespace WizardsCode.Character.WorldState

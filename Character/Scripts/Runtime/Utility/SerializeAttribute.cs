@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WizardsCode.Utility
+namespace WizardsCode.BackgroundAI
 {
     internal class SerializeAttribute : Attribute
     {

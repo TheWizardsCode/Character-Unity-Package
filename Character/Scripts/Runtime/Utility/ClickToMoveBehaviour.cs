@@ -5,7 +5,7 @@ using UnityEngine.AI;
 using WizardsCode.Character;
 using WizardsCode.Stats;
 
-namespace WizardsCode.Utility
+namespace WizardsCode.BackgroundAI
 {
     /// <summary>
     /// Click the left mouse button on the NavMesh to move the NavMeshAgent this scrpt is attached to.
@@ -20,7 +20,7 @@ namespace WizardsCode.Utility
             m_Agent = GetComponent<NavMeshAgent>();
         }
 
-        protected override void OnUpdate()
+        protected override void OnUpdateState()
         {
             if (Input.GetMouseButtonDown(0))
             {

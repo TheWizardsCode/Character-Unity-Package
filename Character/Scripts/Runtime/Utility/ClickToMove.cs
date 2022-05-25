@@ -5,7 +5,7 @@ using UnityEngine.AI;
 using UnityEngine.EventSystems;
 using WizardsCode.Character;
 
-namespace WizardsCode.Utility
+namespace WizardsCode.BackgroundAI
 {
     /// <summary>
     /// Click hte left mouse button on the NavMesh to move the NavMeshAgent this scrpt is attached to.

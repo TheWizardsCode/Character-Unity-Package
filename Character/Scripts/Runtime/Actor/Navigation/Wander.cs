@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 using WizardsCode.Character.Stats;
-using WizardsCode.Utility;
+using WizardsCode.BackgroundAI;
 
 namespace WizardsCode.Character
 {

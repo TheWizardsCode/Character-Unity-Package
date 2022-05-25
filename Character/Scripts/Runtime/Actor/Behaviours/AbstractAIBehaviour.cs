@@ -11,6 +11,8 @@ using WizardsCode.Character.AI;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
 using static WizardsCode.Character.BaseActorController;
+using UnityEngine.Timeline;
+using UnityEngine.Playables;
 
 namespace WizardsCode.Character
 {
@@ -47,6 +49,8 @@ namespace WizardsCode.Character
         protected UnityEvent m_OnEndEvent;
 
         [Header("Cues")]
+        [SerializeField]
+        internal TimelineAsset m_timeline;
         [SerializeField, Tooltip("An actor cue to send to the actor upon the start of this interaction. It should be used to configure the actor ready for the interaction.")]
         [FormerlySerializedAs("m_OnStart")] // v0.12
         protected ActorCue m_OnStartCue;
@@ -217,6 +221,7 @@ namespace WizardsCode.Character
         /// when it next enters the Inactive state.
         /// </summary>
         public bool DestoryOnInactive = false;
+        private PlayableDirector m_Director;
 
         /// <summary>
         /// Check that all the required senses of the world around the cahracter are true.
@@ -317,6 +322,16 @@ namespace WizardsCode.Character
         {
             m_Brain = transform.root.GetComponentInChildren<Brain>();
             m_ActorController = transform.root.GetComponentInChildren<BaseActorController>();
+
+            if (m_timeline)
+            {
+                m_Director = GetComponent<PlayableDirector>();
+                foreach (var track in m_timeline.GetOutputTracks())
+                {
+                    m_Director.SetGenericBinding(track, m_ActorController.gameObject);
+                }
+                m_Director.playableAsset = m_timeline;
+            }
         }
 
         /// <summary>
@@ -328,6 +343,9 @@ namespace WizardsCode.Character
         {
             isPrioritized = false;
             MaxEndTime = Time.timeSinceLevelLoad + MaximumExecutionTime;
+            CurrentState = State.Starting;
+
+            m_Director.Play();
         }
 
         /// <summary>
@@ -431,13 +449,37 @@ namespace WizardsCode.Character
             return weight;
         }
 
-        public void Update()
+        public virtual void Update()
         {
+            if (CurrentState == State.MovingTo || CurrentState == State.Inactive)
+            {
+                return;
+            }
+
+            if (m_timeline)
+            {
+                if (CurrentState == State.Starting)
+                {
+                    m_ActorController.Animator.applyRootMotion = true;
+                    CurrentState = State.Performing;
+                }
+
+                if (m_Director.state == PlayState.Playing)
+                {
+                    return;
+                } else
+                {
+                    m_ActorController.Animator.applyRootMotion = false;
+                    EndBehaviour();
+                    return;
+                }
+            }
+
             if (CurrentState != State.Inactive
                 && (EndTime < Time.timeSinceLevelLoad
                 || MaxEndTime < Time.timeSinceLevelLoad))
             {
-                OnUpdate();
+                OnUpdateState();
             }
         }
 
@@ -445,7 +487,7 @@ namespace WizardsCode.Character
         /// Called whenever this behaviour needs to be updated. By default this will look
         /// for interactables nearby that will satisfy the needs of this behaviour.
         /// </summary>
-        protected virtual void OnUpdate()
+        protected virtual void OnUpdateState()
         {   
             if (CurrentState == State.MovingTo)
             {
@@ -527,20 +569,27 @@ namespace WizardsCode.Character
             if (CurrentState == State.Ending)
             {
                 CurrentState = State.Inactive;
-                Brain.ActiveBlockingBehaviour = null;
-                Brain.TargetInteractable = null;
-                if (DestoryOnInactive)
-                {
-                    if (gameObject.GetComponents<AbstractAIBehaviour>().Length > 1)
-                    {
-                        Destroy(this);
-                    }
-                    else
-                    {
-                        Destroy(gameObject);
-                    }
-                }
+                EndBehaviour();
                 return;
+            }
+        }
+
+        private void EndBehaviour()
+        {
+            Brain.ActiveBlockingBehaviour = null;
+            Brain.TargetInteractable = null;
+            CurrentState = State.Inactive;
+
+            if (DestoryOnInactive)
+            {
+                if (gameObject.GetComponents<AbstractAIBehaviour>().Length > 1)
+                {
+                    Destroy(this);
+                }
+                else
+                {
+                    Destroy(gameObject);
+                }
             }
         }
 

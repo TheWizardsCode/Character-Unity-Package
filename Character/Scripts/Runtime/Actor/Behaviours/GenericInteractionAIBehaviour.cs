@@ -35,19 +35,36 @@ namespace WizardsCode.Character
         internal virtual void StartBehaviour(Interactable interactable)
         {
             m_ActorController.LookAtTarget = interactable.transform;
-
             m_Interactable = interactable;
 
             base.StartBehaviour();
         }
 
-        protected override void OnUpdate()
+        public override void Update()
+        {
+            if (CurrentState == State.MovingTo || CurrentState == State.Inactive)
+            {
+                return;
+            }
+
+            if (m_timeline)
+            {
+                if (CurrentState == State.Starting)
+                {
+                    Brain.Actor.TurnToFace(m_Interactable.transform.position);
+                }
+            }
+
+            base.Update();
+        }
+
+        protected override void OnUpdateState()
         {
             if (CurrentState == State.Starting)
             {
                 Brain.Actor.TurnToFace(m_Interactable.transform.position);
             }
-            base.OnUpdate();
+            base.OnUpdateState();
         }
 
         public override bool IsAvailable

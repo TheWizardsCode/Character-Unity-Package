@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-namespace WizardsCode.Utility
+namespace WizardsCode.BackgroundAI
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class NavMeshAreaMaskAttribute : PropertyAttribute

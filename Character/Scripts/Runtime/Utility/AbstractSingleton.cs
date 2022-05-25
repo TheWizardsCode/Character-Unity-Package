@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace WizardsCode.Utility
+namespace WizardsCode.BackgroundAI
 {
     /// <summary>
     /// To create an manage a singleton simply implement this abstract calss.

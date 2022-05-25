@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using WizardsCode.Character;
 using WizardsCode.Stats;
 using UnityEngine.AI;
-using WizardsCode.Utility;
+using WizardsCode.BackgroundAI;
 
 namespace WizardsCode.Character.AI
 {
@@ -76,7 +76,7 @@ namespace WizardsCode.Character.AI
             m_SqrArrivingDistance = Brain.Actor.ArrivingDistance * Brain.Actor.ArrivingDistance;
         }
 
-        protected override void OnUpdate()
+        protected override void OnUpdateState()
         {
             if (CurrentState == State.Inactive) return;
 
@@ -128,7 +128,7 @@ namespace WizardsCode.Character.AI
                 return;
             }
 
-            base.OnUpdate();
+            base.OnUpdateState();
         }
 
         /// <summary>

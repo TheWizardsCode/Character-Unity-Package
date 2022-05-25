@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2329549644042378363}
   - component: {fileID: 2329549644042378362}
+  - component: {fileID: 2918739707811278733}
   m_Layer: 0
   m_Name: Harvest Edible Food
   m_TagString: Untagged
@@ -56,11 +57,12 @@ MonoBehaviour:
   m_OnEndEvent:
     m_PersistentCalls:
       m_Calls: []
+  m_timeline: {fileID: 11400000, guid: 8704d2e7025627343af5bde4347de711, type: 2}
   m_OnStartCue: {fileID: 0}
-  m_OnPrepareCue: {fileID: 11400000, guid: 634c58f1450fc0246b9c77314a10f9ac, type: 2}
+  m_OnPrepareCue: {fileID: 0}
   m_OnPerformCue:
-  - {fileID: 11400000, guid: 26bd48fe13a13194ba541a6423b0e72e, type: 2}
-  m_OnFinalizeCue: {fileID: 11400000, guid: d804123e4d7f7ce489c68f4f01d661a4, type: 2}
+  - {fileID: 0}
+  m_OnFinalizeCue: {fileID: 0}
   m_OnEndCue: {fileID: 0}
   m_NextBehaviour: {fileID: 0}
   m_WeightMultiplier: 2.38
@@ -75,3 +77,20 @@ MonoBehaviour:
   CurrentState: 5
   DestoryOnInactive: 0
   awarenessRange: 50
+--- !u!320 &2918739707811278733
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2329549644042378364}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 0}
+  m_InitialState: 0
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings: []
+  m_ExposedReferences:
+    m_References: []

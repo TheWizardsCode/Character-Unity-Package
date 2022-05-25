@@ -216,7 +216,7 @@ namespace WizardsCode.Stats {
                 return;
             }
 
-            UpdateActiveBehaviour();
+            SelectBehaviour();
 
             m_TimeOfNextBehaviourUpdate = Time.timeSinceLevelLoad + (m_TimeBetweenUpdates * (1 + Random.Range(-m_TimingVariation, m_TimingVariation)));
         }
@@ -239,7 +239,7 @@ namespace WizardsCode.Stats {
         /// <summary>
         /// Iterates over all the behaviours available to this actor and picks the most important one to be executed next.
         /// </summary>
-        private void UpdateActiveBehaviour()
+        private void SelectBehaviour()
         {
             if (ActiveBlockingBehaviour != null
                 && ActiveBlockingBehaviour

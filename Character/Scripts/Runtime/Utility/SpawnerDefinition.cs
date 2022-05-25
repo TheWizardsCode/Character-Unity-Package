@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System;
 using Random = UnityEngine.Random;
 
-namespace WizardsCode.Utility
+namespace WizardsCode.BackgroundAI
 {
     /// <summary>
     /// A SpawnerDefinition describes what can be spawned by a spawning event.
@@ -16,7 +16,7 @@ namespace WizardsCode.Utility
     public class SpawnerDefinition : ScriptableObject
     {
         [SerializeField, Tooltip("An ordered list of spawn prefabs that might be spawned by this spawner definition.")]
-        SpawnObjectDefinition[] m_SpawnObjectDefinitions;
+        Spawnable[] m_SpawnObjectDefinitions;
 
 
         /// <summary>
@@ -32,22 +32,20 @@ namespace WizardsCode.Utility
             string name = "";
             for (int prefabIdx = 0; prefabIdx < m_SpawnObjectDefinitions.Length; prefabIdx++)
             {
-                SpawnObjectDefinition spawnedPrefab = m_SpawnObjectDefinitions[prefabIdx];
+                Spawnable spawnDefinition = m_SpawnObjectDefinitions[prefabIdx];
 
-                if (spawnedPrefab.probability >= Random.value)
+                if (spawnDefinition.probability >= Random.value)
                 {
                     if (string.IsNullOrEmpty(name))
                     {
-                        name = spawnedPrefab.prefab.name;
+                        name = spawnDefinition.prefab.name;
                     }
 
-                    // We do this juggling with names because the Brain gets initialized in the Awake and thus it has the wrong name if we add the postfix after creation
-                    spawnedPrefab.prefab.name = name + " - " + namePostfix + " ";
-                    go = Instantiate(spawnedPrefab.prefab, (Vector3)position, rotation);
+                    go = Instantiate(spawnDefinition.prefab, (Vector3)position, rotation);
+                    go.name = $"{name} - {namePostfix}";
                     spawned.Add(go);
-                    spawnedPrefab.prefab.name = name;
 
-                    if (spawnedPrefab.stopSpawning)
+                    if (spawnDefinition.stopSpawning)
                     {
                         break;
                     }
@@ -61,7 +59,7 @@ namespace WizardsCode.Utility
     }
 
     [Serializable]
-    public struct SpawnObjectDefinition
+    public struct Spawnable
     {
         [SerializeField, Tooltip("The prefab to spawn.")]
         public GameObject prefab;

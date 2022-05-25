@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using WizardsCode.Character;
-using WizardsCode.Utility;
+using WizardsCode.BackgroundAI;
 
 namespace WizardsCode.Character
 {

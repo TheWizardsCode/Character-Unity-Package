@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace WizardsCode.Utility
+namespace WizardsCode.BackgroundAI
 {
     /// <summary>
     /// Drop this on any object you want to always be facing the camera. Discovers the main camera on Start,

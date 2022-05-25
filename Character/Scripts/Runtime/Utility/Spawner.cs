@@ -5,7 +5,7 @@ using UnityEngine.AI;
 using WizardsCode.Character;
 using WizardsCode.Character.WorldState;
 
-namespace WizardsCode.Utility
+namespace WizardsCode.BackgroundAI
 {
     /// <summary>
     /// A really simple spawner that will create a number of a given prefab within a defined area.
@@ -23,19 +23,19 @@ namespace WizardsCode.Utility
         [SerializeField, Tooltip("The maximum number of these items to be spawned in world at any one time. " +
             " That is, if there are this many already in the world no new instances will be spawned." +
             " Note that depending on the Spawn Definition each spawn may be more than one prefab.")]
-        int m_NumberOfSpawns = 5;
+        protected int m_NumberOfSpawns = 5;
         [SerializeField, Tooltip("The radius within which to spawn")]
         float m_Radius = 10;
         [SerializeField, Tooltip("The frequency at which new instances will be spawned if there are fewer than the maximum allowed number.")]
-        float m_SpawnFrequency = 5;
+        protected float m_SpawnFrequency = 5;
         [SerializeField, Tooltip("Should the character only be placed on a NavMesh?")]
         bool onNavMesh = false;
         [HideInInspector, SerializeField, Tooltip("The area mask that indicates NavMesh areas that the spawner can spawn characters into.")]
         public int navMeshAreaMask = NavMesh.AllAreas;
 
-        List<Transform> m_Spawned = new List<Transform>();
-        int m_SpawnedCount = 0;
-        float m_TimeOfNextSpawn = 0;
+        protected List<Transform> m_Spawned = new List<Transform>();
+        protected int m_TotalSpawnedCount = 0;
+        protected float m_TimeOfNextSpawn = 0;
 
         /// <summary>
         /// Get all the objects spawned by this spawner.
@@ -51,24 +51,25 @@ namespace WizardsCode.Utility
 
             for (int i = m_SpawnsOnStart; i > 0; i--)
             {
-                m_SpawnedCount++;
-                Spawn(m_SpawnedCount.ToString());
+                m_TotalSpawnedCount++;
+                Spawn(m_TotalSpawnedCount.ToString());
             }
 
             m_TimeOfNextSpawn = m_SpawnFrequency;
         }
 
-        private void Update()
+        protected virtual void Update()
         {
             if (m_Spawned.Count < m_NumberOfSpawns
                 && m_TimeOfNextSpawn <= Time.time)
             {
-                Spawn(m_SpawnedCount.ToString());
+                Spawn(m_TotalSpawnedCount.ToString());
+                m_TotalSpawnedCount++;
                 m_TimeOfNextSpawn = Time.time + m_SpawnFrequency;
             }
         }
 
-        private void Spawn(string namePostfix)
+        protected virtual GameObject[] Spawn(string namePostfix)
         {
             Vector3? position = GetPosition();
 
@@ -80,7 +81,10 @@ namespace WizardsCode.Utility
                 {
                     m_Spawned.Add(spawned[idx].transform);
                 }
+                return spawned;
             }
+
+            return null;
         }
 
         /// <summary>
