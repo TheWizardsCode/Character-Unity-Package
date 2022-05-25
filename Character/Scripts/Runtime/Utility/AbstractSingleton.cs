@@ -9,53 +9,34 @@ namespace WizardsCode.Utility
     /// 
     /// Inspired by http://wiki.unity3d.com/index.php/Singleton
     /// </summary>
-    public abstract class AbstractSingleton<T> : MonoBehaviour where T : MonoBehaviour
+    public abstract class AbstractSingleton<T> : MonoBehaviour where T : AbstractSingleton<T>
     {
-        private static bool m_ShuttingDown = false;
-        private static object m_Lock = new object();
-        private static T m_Instance;
+        [SerializeField, Tooltip("If set to true this instance will persist between levels.")]
+        bool m_IsPersistant = false;
 
-        public static T Instance
+        static T m_Instance;
+
+        public static T Instance { get { return m_Instance; } }
+
+        public virtual void OnEnable()
         {
-            get
+            if (m_IsPersistant)
             {
-                if (m_ShuttingDown)
+                if (!m_Instance)
                 {
-                    Debug.LogWarning("[Singleton] Instance '" + typeof(T) +
-                        "' already destroyed. Returning null. This can happen in the Editor as the application shuts down.");
-                    return null;
+                    m_Instance = this as T;
                 }
-
-                lock (m_Lock)
+                else
                 {
-                    if (m_Instance == null)
-                    {
-                        m_Instance = (T)FindObjectOfType(typeof(T));
-
-                        if (m_Instance == null)
-                        {
-                            var singletonObject = new GameObject();
-                            m_Instance = singletonObject.AddComponent<T>();
-                            singletonObject.name = typeof(T).ToString() + " (Singleton)";
-
-                            DontDestroyOnLoad(singletonObject);
-                        }
-                    }
-
-                    return m_Instance;
+                    Destroy(gameObject);
                 }
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                m_Instance = this as T;
             }
         }
-
-
-        private void OnApplicationQuit()
-        {
-            m_ShuttingDown = true;
-        }
-
-        private void OnDestroy()
-        {
-            m_ShuttingDown = true;
-        }
     }
+
 }

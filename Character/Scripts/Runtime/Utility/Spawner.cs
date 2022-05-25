@@ -12,18 +12,30 @@ namespace WizardsCode.Utility
     /// </summary>
     public class Spawner : MonoBehaviour
     {
+        [SerializeField, Tooltip("A name that will be appended to each instance. This will also have a number appended to make each unique.")]
+        string m_Name = "Spawned";
         [SerializeField, Tooltip("The rules this spawner should obey when spawning.")]
         SpawnerDefinition m_SpawnDefinition;
-        [SerializeField, Tooltip("The number of spawns to place, note that depending on the Spawn Definition each spawn may be more than one prefab.")]
-        int m_NumberOfSpawns = 10;
+
+        [SerializeField, Tooltip("The number of items to spawn on start." +
+            " If this is set to 0 then no items will spawn until the duration of the spawn frequency has passed.")]
+        int m_SpawnsOnStart = 0;
+        [SerializeField, Tooltip("The maximum number of these items to be spawned in world at any one time. " +
+            " That is, if there are this many already in the world no new instances will be spawned." +
+            " Note that depending on the Spawn Definition each spawn may be more than one prefab.")]
+        int m_NumberOfSpawns = 5;
         [SerializeField, Tooltip("The radius within which to spawn")]
         float m_Radius = 10;
+        [SerializeField, Tooltip("The frequency at which new instances will be spawned if there are fewer than the maximum allowed number.")]
+        float m_SpawnFrequency = 5;
         [SerializeField, Tooltip("Should the character only be placed on a NavMesh?")]
         bool onNavMesh = false;
         [HideInInspector, SerializeField, Tooltip("The area mask that indicates NavMesh areas that the spawner can spawn characters into.")]
         public int navMeshAreaMask = NavMesh.AllAreas;
 
         List<Transform> m_Spawned = new List<Transform>();
+        int m_SpawnedCount = 0;
+        float m_TimeOfNextSpawn = 0;
 
         /// <summary>
         /// Get all the objects spawned by this spawner.
@@ -37,17 +49,36 @@ namespace WizardsCode.Utility
         {
             ActorManager.Instance.RegisterSpawner(this);
 
-            for (int i = 0; i < m_NumberOfSpawns; i++)
+            for (int i = m_SpawnsOnStart; i > 0; i--)
             {
-                Vector3? position = GetPosition();
+                m_SpawnedCount++;
+                Spawn(m_SpawnedCount.ToString());
+            }
 
-                if (position != null)
+            m_TimeOfNextSpawn = m_SpawnFrequency;
+        }
+
+        private void Update()
+        {
+            if (m_Spawned.Count < m_NumberOfSpawns
+                && m_TimeOfNextSpawn <= Time.time)
+            {
+                Spawn(m_SpawnedCount.ToString());
+                m_TimeOfNextSpawn = Time.time + m_SpawnFrequency;
+            }
+        }
+
+        private void Spawn(string namePostfix)
+        {
+            Vector3? position = GetPosition();
+
+            if (position != null)
+            {
+                //Optimization: Use a pool
+                GameObject[] spawned = m_SpawnDefinition.InstantiatePrefabs((Vector3)position, $"{m_Name} {namePostfix}");
+                for (int idx = 0; idx < spawned.Length; idx++)
                 {
-                    GameObject[] spawned = m_SpawnDefinition.InstantiatePrefabs((Vector3)position, i.ToString());
-                    for (int idx = 0; idx < spawned.Length; idx++)
-                    {
-                        m_Spawned.Add(spawned[idx].transform);
-                    }
+                    m_Spawned.Add(spawned[idx].transform);
                 }
             }
         }
@@ -72,31 +103,26 @@ namespace WizardsCode.Utility
             Vector2 pos2D = Random.insideUnitCircle * m_Radius;
             Vector3 position = transform.position + new Vector3(pos2D.x, 0, pos2D.y);
             Vector3 finalPos = position;
-            if (Terrain.activeTerrain != null) {
+            if (!onNavMesh && Terrain.activeTerrain != null) {
                 finalPos.y = Terrain.activeTerrain.SampleHeight(finalPos) + Terrain.activeTerrain.transform.position.y;
-            }
-
-            if (onNavMesh)
+            } else if (onNavMesh)
             {
                 NavMeshHit hit;
                 if (NavMesh.SamplePosition(finalPos, out hit, 2, navMeshAreaMask))
                 {
                     finalPos = hit.position;
-                    return finalPos;
                 } else
                 {
                     return GetPosition(attemptNumber);
                 }
-            } else
-            {
-                return finalPos;
             }
+
+            return finalPos;
         }
 
         private void OnDrawGizmosSelected()
         {
             Gizmos.DrawWireSphere(transform.position, m_Radius);
         }
-
     }
 }
