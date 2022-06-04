@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 using WizardsCode.Character;
 using WizardsCode.Character.WorldState;
 
@@ -13,10 +14,17 @@ namespace WizardsCode.BackgroundAI
     public class Spawner : MonoBehaviour
     {
         [SerializeField, Tooltip("A name that will be appended to each instance. This will also have a number appended to make each unique.")]
-        string m_Name = "Spawned";
+        string m_SpawnerName = "Spawned";
         [SerializeField, Tooltip("The rules this spawner should obey when spawning.")]
         SpawnerDefinition m_SpawnDefinition;
 
+        [Header("Spawn Restrictors")]
+        [SerializeField, Tooltip("The tag that is used to mark players.")]
+        string m_PlayerTag = "Player";
+        [SerializeField, Tooltip("The minimum distance the nearest player can be for this spawn to spawn a new object.")]
+        float m_MinSpawnDistance = 100;
+
+        [Header("Spawn Definition")]
         [SerializeField, Tooltip("The number of items to spawn on start." +
             " If this is set to 0 then no items will spawn until the duration of the spawn frequency has passed.")]
         int m_SpawnsOnStart = 0;
@@ -33,9 +41,15 @@ namespace WizardsCode.BackgroundAI
         [HideInInspector, SerializeField, Tooltip("The area mask that indicates NavMesh areas that the spawner can spawn characters into.")]
         public int navMeshAreaMask = NavMesh.AllAreas;
 
+        [Header("Spawn Events")]
+        [SerializeField, Tooltip("An event that is fired whenever an object is spawned.")]
+        public UnityEvent<GameObject> OnSpawn;
+        
         protected List<Transform> m_Spawned = new List<Transform>();
         protected int m_TotalSpawnedCount = 0;
         protected float m_TimeOfNextSpawn = 0;
+        protected float m_MinDistanceSqr;
+        protected Transform m_Player;
 
         /// <summary>
         /// Get all the objects spawned by this spawner.
@@ -45,7 +59,22 @@ namespace WizardsCode.BackgroundAI
             get { return m_Spawned; }
         }
 
-        private void Start()
+        protected Transform Player
+        {
+            get
+            {
+                if (m_Player == null)
+                {
+                    GameObject go = GameObject.FindGameObjectWithTag(m_PlayerTag);
+                    if (go != null) {
+                        m_Player = go.transform;
+                    }
+                }
+                return m_Player;
+            }
+        }
+
+        protected void Start()
         {
             ActorManager.Instance.RegisterSpawner(this);
 
@@ -56,17 +85,28 @@ namespace WizardsCode.BackgroundAI
             }
 
             m_TimeOfNextSpawn = m_SpawnFrequency;
+
+            m_MinDistanceSqr = m_MinSpawnDistance * m_MinSpawnDistance;
         }
 
         protected virtual void Update()
         {
-            if (m_Spawned.Count < m_NumberOfSpawns
-                && m_TimeOfNextSpawn <= Time.time)
+            if (!ShouldSpawn())
             {
-                Spawn(m_TotalSpawnedCount.ToString());
-                m_TotalSpawnedCount++;
-                m_TimeOfNextSpawn = Time.time + m_SpawnFrequency;
+                return;
             }
+
+            Spawn(m_TotalSpawnedCount.ToString());
+            m_TotalSpawnedCount++;
+            m_TimeOfNextSpawn = Time.time + m_SpawnFrequency;
+        }
+
+        protected virtual bool ShouldSpawn()
+        {
+            if (Player == null || (m_Player.position - transform.position).sqrMagnitude > m_MinDistanceSqr) return false;
+            if (m_Spawned.Count >= m_NumberOfSpawns || m_TimeOfNextSpawn <= Time.time) return false;
+
+            return true;
         }
 
         protected virtual GameObject[] Spawn(string namePostfix)
@@ -76,11 +116,13 @@ namespace WizardsCode.BackgroundAI
             if (position != null)
             {
                 //Optimization: Use a pool
-                GameObject[] spawned = m_SpawnDefinition.InstantiatePrefabs((Vector3)position, $"{m_Name} {namePostfix}");
+                GameObject[] spawned = m_SpawnDefinition.InstantiatePrefabs((Vector3)position, $"{m_SpawnerName} {namePostfix}");
                 for (int idx = 0; idx < spawned.Length; idx++)
                 {
                     m_Spawned.Add(spawned[idx].transform);
+                    OnSpawn.Invoke(spawned[idx]);
                 }
+
                 return spawned;
             }
 
@@ -106,27 +148,33 @@ namespace WizardsCode.BackgroundAI
 
             Vector2 pos2D = Random.insideUnitCircle * m_Radius;
             Vector3 position = transform.position + new Vector3(pos2D.x, 0, pos2D.y);
-            Vector3 finalPos = position;
-            if (!onNavMesh && Terrain.activeTerrain != null) {
-                finalPos.y = Terrain.activeTerrain.SampleHeight(finalPos) + Terrain.activeTerrain.transform.position.y;
-            } else if (onNavMesh)
+            if (Terrain.activeTerrain != null)
+            {
+                position.y = Terrain.activeTerrain.SampleHeight(position) + Terrain.activeTerrain.transform.position.y;
+            }
+            
+            if (onNavMesh)
             {
                 NavMeshHit hit;
-                if (NavMesh.SamplePosition(finalPos, out hit, 2, navMeshAreaMask))
+                if (NavMesh.SamplePosition(position, out hit, 2, navMeshAreaMask))
                 {
-                    finalPos = hit.position;
+                    position = hit.position;
                 } else
                 {
                     return GetPosition(attemptNumber);
                 }
             }
 
-            return finalPos;
+            return position;
         }
 
         private void OnDrawGizmosSelected()
         {
+            Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(transform.position, m_Radius);
+
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, m_MinSpawnDistance);
         }
     }
 }
