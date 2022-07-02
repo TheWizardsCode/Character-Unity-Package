@@ -103,7 +103,7 @@ namespace WizardsCode.BackgroundAI
 
         protected virtual bool ShouldSpawn()
         {
-            if (Player == null || (m_Player.position - transform.position).sqrMagnitude > m_MinDistanceSqr) return false;
+            if (Player != null && (m_Player.position - transform.position).sqrMagnitude < m_MinDistanceSqr) return false;
             if (m_Spawned.Count >= m_NumberOfSpawns || m_TimeOfNextSpawn <= Time.time) return false;
 
             return true;
