@@ -345,7 +345,10 @@ namespace WizardsCode.Character
             MaxEndTime = Time.timeSinceLevelLoad + MaximumExecutionTime;
             CurrentState = State.Starting;
 
-            m_Director.Play();
+            if (m_Director != null)
+            {
+                m_Director.Play();
+            }
         }
 
         /// <summary>
