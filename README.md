@@ -24,7 +24,9 @@ This method is super easy and doesn't require Git. However, it will not autoupda
   
 ## Installation Of Development Code
 
-We are a big fan of enabling our users to improve our code, so we would encourage you to use the source code. You can do this using out own [Character-Dev](https://github.com/TheWizardsCode/Character-Dev) project or you can do it within your own development project.
+We are a big fan of enabling our users to improve our code, so we would encourage you to use the source code. We provide a companion project that can be used
+as a development project, see [Character-Dev](https://github.com/TheWizardsCode/Character-Dev). Alternatively you can checkout this repo into your own development 
+project, we recommend doing this as a Git submodule.
 
   1. Fork and clone the repo into your preferred location with `git clone [YOUR_FORK_URL]`
   2. Create a Unity project (or checkout [Character-Dev](https://github.com/TheWizardsCode/Character-Dev))
